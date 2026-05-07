@@ -23,6 +23,10 @@ Expected: `✔ Successfully added marketplace: patchline-ai (declared in user se
 
 Expected: `✓ Installed cadence` then `Reloaded: 1 plugin · …`. The Patchline AI marketplace is hosted from the Aria repo and lists Cadence as a second plugin entry.
 
+Some builds report `0 skills` in the reload summary even though namespaced
+plugin skills are installed. If that happens, try `/cadence:cadence-sweep` or
+ask `Run a weekly sweep on this repo.`
+
 If your Claude Code build does not expose `/plugin` yet, use the manual
 symlink installer:
 
@@ -41,9 +45,9 @@ pwsh "$env:USERPROFILE\.claude-cadence\scripts\install.ps1"
 ```
 
 After `/reload-plugins`, Cadence's three skills are available:
-- `cadence-pr-review`
-- `cadence-research`
-- `cadence-sweep`
+- `cadence:cadence-pr-review` (`cadence-pr-review`)
+- `cadence:cadence-research` (`cadence-research`)
+- `cadence:cadence-sweep` (`cadence-sweep`)
 
 No MCP server. No external account. Pure local skills.
 
@@ -109,20 +113,27 @@ Run cadence-sweep weekly.
 
 Output: a list of findings (flaky tests, orphan tests, coverage gaps, fixture distribution, perf drift) plus the gate-upgrade PRs each finding implies.
 
+Direct command form:
+
+```text
+/cadence:cadence-sweep
+```
+
 ## Customizing for your codebase
 
 The skill ships with reference docs in `references/` covering each of the 5 standards. The patterns are generic by default. To customize:
 
-1. Open `~/.claude/skills/cadence-pr-review/references/security-review.md` (path may differ on your install).
-2. Add your codebase-specific patterns (e.g. "all DDB writes on table X must use `expectedUpdatedAt`", "all API key access via `lib/secret-env.ts`", etc.).
-3. The skill picks them up automatically on next invocation.
+1. Run `/plugin info cadence` to find Cadence's installed plugin path.
+2. Open `<installPath>/skills/cadence-pr-review/references/security-review.md`.
+3. Add your codebase-specific patterns (e.g. "all DDB writes on table X must use `expectedUpdatedAt`", "all API key access via `lib/secret-env.ts`", etc.).
+4. The skill picks them up automatically on next invocation.
 
-This is the migration path: install Cadence with its generic patterns; layer your codebase-specific patterns on top as you discover them.
+Direct edits inside the plugin cache can be overwritten by reinstall/update. If your custom patterns become team policy, fork Cadence or vendor those references into your own team skill.
 
 ## Troubleshooting
 
 See [TROUBLESHOOTING.md](../TROUBLESHOOTING.md). Common issues:
 
 - "Skill not found after `/reload-plugins`" → confirm `.claude-plugin/plugin.json` parses (`node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json'))"`)
-- "5 standards run but trio doesn't" → check the skill's "When the trio is MANDATORY" section. Trio fires only on high-surface PR detection.
+- "5 standards run but lenses don't" → check the skill's "When the trio is MANDATORY" section. The three inline lenses fire only on high-surface PR detection.
 - "Eval fixture's 5 findings aren't all flagged" → the model harness may need tightening. Open an issue.

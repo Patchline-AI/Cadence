@@ -36,12 +36,29 @@ node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json'))"
 Should print nothing and exit 0. If it errors, fix the JSON syntax.
 
 If you installed through `/plugin`, make sure the Patchline AI marketplace was
-added from `Patchline-AI/Aria`:
+added from `Patchline-AI/Aria` in your plain shell, not inside a Claude chat:
 
 ```bash
-/plugin marketplace add Patchline-AI/Aria
+claude plugin marketplace add Patchline-AI/Aria
+```
+
+Then start Claude Code and run:
+
+```text
 /plugin install cadence@patchline-ai
 ```
+
+### "`/reload-plugins` says 0 skills"
+
+Some builds report `0 skills` in the reload summary even when namespaced plugin
+skills are available. Test the namespace directly:
+
+```text
+/cadence:cadence-sweep
+```
+
+If that command runs, Cadence is installed. You can also invoke it in natural
+language: `Run a weekly sweep on this repo.`
 
 ### "Plugin shows but skills don't appear"
 
@@ -83,7 +100,11 @@ Confirm the file is at the right path. Run:
 /plugin info cadence
 ```
 
-That shows where Cadence is installed. References live under that install path's `skills/cadence-pr-review/references/` directory. On Windows that's typically `C:\Users\<you>\.claude\plugins\cadence\skills\...` or similar. Edit there, then `/reload-plugins`.
+That shows where Cadence is installed. References live under that install path's `skills/cadence-pr-review/references/` directory. On Windows, plugin installs typically land under `C:\Users\<you>\.claude\plugins\cache\patchline-ai\cadence\<version>\...`. Edit there, then `/reload-plugins`.
+
+Direct edits inside the plugin cache can be overwritten by reinstall/update. If
+the pattern is team policy, fork Cadence or vendor the reference file into your
+own team skill.
 
 ## Reporting bugs
 

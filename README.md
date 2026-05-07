@@ -36,6 +36,11 @@ Now start a Claude Code session (`claude`), then run these as slash commands ins
 
 Expected output: `✓ Installed cadence. Run /reload-plugins to apply.` followed by `Reloaded: 1 plugin · …`. Cadence has no MCP server and no external account: it installs pure local skills.
 
+Some builds report `0 skills` in the reload summary even though namespaced
+plugin skills are installed. The reliable check is to run one of the Cadence
+commands, such as `/cadence:cadence-sweep`, or ask Claude in natural language:
+`Run a weekly sweep on this repo.`
+
 ### Try it — first runs after install
 
 Inside the same Claude Code session, ask:
@@ -45,6 +50,12 @@ Run a weekly sweep on this repo.
 ```
 
 That triggers `cadence-sweep` to walk through the weekly drift checks and print findings + the gate-upgrade PRs each finding implies. Two more concrete first runs:
+
+If you prefer the explicit namespaced command:
+
+```text
+/cadence:cadence-sweep
+```
 
 ```text
 Use cadence-pr-review on the current branch.
