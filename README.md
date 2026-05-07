@@ -21,7 +21,7 @@ No MCP server. No external account. Pure local skills.
 
 ## What you get
 
-- **`cadence-pr-review`** — five Agent Review Standards (Codebase Drift, Conflicting PR, Security, Architectural Alignment, Test Coverage), plus a specialist trio dispatch pattern (silent-failure-hunter + security-auditor + pr-test-analyzer) for high-surface PRs, plus a scope-change drill for receiving agent completion summaries.
+- **`cadence-pr-review`** — five Agent Review Standards (Codebase Drift, Conflicting PR, Security, Architectural Alignment, Test Coverage), plus three additional review lenses (silent failures, security semantics, test-coverage semantics) for high-surface PRs, plus a scope-change drill for receiving agent completion summaries.
 - **`cadence-research`** — the four-move research practice (map / inspect history / find seams / produce artifact) plus diagram-as-research thinking.
 - **`cadence-sweep`** — the daily / weekly / monthly / quarterly sweep cadence with the sweep-to-gate ratchet.
 
@@ -29,13 +29,48 @@ No MCP server. No external account. Pure local skills.
 
 Three pillars on three rhythms. See [`docs/methodology.md`](./docs/methodology.md) for the full framing.
 
+<details>
+<summary><strong>The three pillars (click to expand)</strong></summary>
+
+```text
+                       ┌─────────────────────────────┐
+                       │  SWEEPS  (recurring rhythm) │
+                       │  "What is accumulating?"    │
+                       │  → flaky tests, drift, gaps │
+                       │    the gates missed         │
+                       └─────────────┬───────────────┘
+                                     │ output: stronger gates
+                                     ▼
+   ┌────────────────────────────────────────────────────────────────┐
+   │  GATES  (event-driven, at change boundaries)                   │
+   │  "Can this work move forward?"                                 │
+   │   L1 Fast Feedback     <10 min   25+ parallel checks           │
+   │   L2 Behavioral         <15 min   E2E in real containers       │
+   │   L3 Platform          per push   cross-platform               │
+   │   L4 Human Ownership   pre-merge  CODEOWNERS + 5 review skills │
+   │   L5 On-Demand          manual    real GPU / costly scenarios  │
+   └────────────────────────────────┬───────────────────────────────┘
+                                    │ guards
+                                    ▼
+   ┌────────────────────────────────────────────────────────────────┐
+   │  RESEARCH  (per-task, before work)                             │
+   │  "What do we need to understand?"                              │
+   │  Map the system → Inspect the history → Find the seams →       │
+   │  Produce an artifact (plan, diagram, risk memo).               │
+   │  "If the agent starts with the wrong mental model,             │
+   │   speed just compounds the wrong answer."                      │
+   └────────────────────────────────────────────────────────────────┘
+```
+
+</details>
+
 > _Research reduces unknowns. Gates enforce what we know. Sweeps discover what we missed._
 
 ## The receipts
 
-In the field test that produced this plugin, a real high-surface PR scored **0 BLOCKERS** under the 5 standards alone. Adding the parallel specialist trio surfaced **4 BLOCKERS and 16 FLAGS** that would have shipped to production — including a rate-limit fail-closed-as-throttle conflation, a Python `urllib.error.URLError` bypass in a Lambda handler, a secret-fallback gate predicate, and a public endpoint whose magic-byte sniff was untested at the unit level.
+In the field test that produced this plugin, a real high-surface PR scored **0 BLOCKERS** under the 5 standards alone. Adding the three additional review lenses (silent failures, security semantics, test-coverage semantics) surfaced **4 BLOCKERS and 16 FLAGS** that would have shipped to production — including a rate-limit fail-closed-as-throttle conflation, a Python `urllib.error.URLError` bypass in a Lambda handler, a secret-fallback gate predicate, and a public endpoint whose magic-byte sniff was untested at the unit level.
 
-The 5 standards check **patterns**. The specialists check **semantics**. Both are necessary for high-surface code.
+The 5 standards check **patterns**. The lenses check **semantics**. Both are necessary for high-surface code.
 
 See [`docs/examples/reviewing-an-agent-pr.md`](./docs/examples/reviewing-an-agent-pr.md) for the full worked example.
 
@@ -48,7 +83,7 @@ See [`docs/quickstart.md`](./docs/quickstart.md). Five minutes from `/plugin ins
 Three things this plugin does that a generic "code review" tool doesn't:
 
 1. **Layered gates with explicit time budgets.** The 5 standards are Layer 4 of a 5-layer gate ladder (L1 Fast Feedback <10 min, L2 Behavioral Verification <15 min, L3 Platform Coverage, L4 Human Ownership / 5 standards, L5 On-Demand Deep Checks). Velocity is preserved by the budgets.
-2. **Specialist composition for semantics.** The 5 standards are pattern-checks. They miss semantics. The trio dispatch catches the failure modes the standards can't see.
+2. **Specialist composition for semantics.** The 5 standards are pattern-checks. They miss semantics. Three additional review lenses (silent failures, security semantics, test-coverage semantics) catch the failure modes the standards can't see.
 3. **Sweep-to-gate ratchet.** Every sweep ships TWO things: cleanup PR AND gate-upgrade PR. The bar gets stricter every cycle. That's the ratchet — without it, sweeps are just one-off cleanup.
 
 ## Customizing for your codebase
@@ -63,7 +98,7 @@ This is the migration path: install with the generic patterns, layer your specif
 
 ## Attribution
 
-The Research / Gates / Sweeps framing, the five Agent Review Standards, the layered PR gate budgets, and diagram-as-research were anchored by talks at **AI Agents 2026** — most directly Julie Yaunches' *Accelerated Engineering* talk, with reinforcing material across the conference (Datadog on observability-as-verification, Trading Swarm on quality gates between research and production, the 4-layer agent stack on data/semantic/agent/trust separation). Cadence's contribution on top: the specialist trio dispatch pattern, the scope-change drill, the sweep-to-gate ratchet, and the executable form. See [`reference/attribution.md`](./reference/attribution.md) for the full citation.
+The Research / Gates / Sweeps framing, the five Agent Review Standards, the layered PR gate budgets, and diagram-as-research were anchored by talks at **AI Agents 2026**, with reinforcing material across the conference (observability-as-verification, quality gates between research and production, the data/semantic/agent/trust layered stack). Cadence's contribution on top: the three inline review lenses, the scope-change drill, the sweep-to-gate ratchet, and the executable form. See [`reference/attribution.md`](./reference/attribution.md) for the full citation.
 
 ## License
 

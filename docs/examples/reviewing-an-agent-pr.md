@@ -1,6 +1,6 @@
 # Worked example: reviewing another agent's PR completion summary
 
-A real session (May 2026 field test, anonymized). Demonstrates Cadence end-to-end: the scope-change drill, the 5 standards, the specialist trio, and the deduplicated verdict.
+A real session (May 2026 field test, anonymized). Demonstrates Cadence end-to-end: the scope-change drill, the 5 standards, the three inline review lenses (silent failures, security semantics, test-coverage semantics), and the deduplicated verdict.
 
 ## The setup
 
@@ -37,7 +37,7 @@ An autonomous agent (Codex) finished a security-hardening PR overnight and paste
    ```
    The summary did not mention that an unrelated feature PR had been merged into this branch. **Scope grew silently.**
 
-4. **Decision rule fires.** Per `references/specialist-trio.md`: 5+ commits / 500+ lines / off-scope feature merge → **mandatory specialist trio dispatch**.
+4. **Decision rule fires.** Per `references/specialist-trio.md`: 5+ commits / 500+ lines / off-scope feature merge → **three additional review lenses are mandatory**.
 
 ## The 5-standards pass
 
@@ -46,36 +46,36 @@ The 5 standards run first against the original baseline scope. Result:
 
 If the review had stopped here, the PR would have shipped.
 
-## The trio dispatch
+## The three inline lenses
 
-Three specialists in parallel on the delta:
+Three additional review passes by the same skill, each with a different lens, on the delta:
 
-```
-Agent 1: silent-failure-hunter — swallowed exceptions, fail-closed semantics, .catch(() => null) corrupting state
-Agent 2: security-auditor — JWT aud/client_id, single-secret blast radius, identity-hash bypass, body-buffer DoS, lock-takeover clock-skew
-Agent 3: pr-test-analyzer — layered-but-not-composed, public endpoint magic-byte sniff untested, missing regression tests
+```text
+Lens 1 — Silent failures: swallowed exceptions, fail-closed semantics, .catch(() => null) corrupting state
+Lens 2 — Security: JWT aud/client_id, single-secret blast radius, identity-hash bypass, body-buffer DoS, lock-takeover clock-skew
+Lens 3 — Test coverage semantics: layered-but-not-composed, public endpoint magic-byte sniff untested, missing regression tests
 ```
 
 ## The combined verdict
 
 | Severity | Finding | Source |
 |---|---|---|
-| BLOCKER | Rate-limit fail-closed conflated with rate burst — endpoint goes into permanent 429-storm on DDB outage with no operational signal | silent-failure-hunter |
-| BLOCKER | Python `urllib.error.URLError` not caught — only `HTTPError` is in the targeted handler. DNS / timeout failures bypass tagged Sentry capture | silent-failure-hunter |
-| BLOCKER | Secret fallback gate predicate fires too easily — staging with a local env var set silently switches secrets on Secrets Manager outage | silent-failure-hunter |
-| BLOCKER | Public endpoint magic-byte sniff added but untested at unit level — integration runner sends `text/plain` and never reaches the magic-byte branch | pr-test-analyzer |
-| FLAG | JWT verification missing `aud`/`client_id` validation — token from any App Client in the same OAuth pool passes | security-auditor |
-| FLAG | Admin email gate trusts `cognito:username` as fallback without `email_verified` check | security-auditor |
-| FLAG | Step-up cookie has no IP/UA binding — 30-min replay window if cookie compromised | security-auditor |
-| FLAG | Single-secret blast radius — same env var gates routine step-up AND nuclear reset capabilities | security-auditor |
+| BLOCKER | Rate-limit fail-closed conflated with rate burst — endpoint goes into permanent 429-storm on DDB outage with no operational signal | Lens 1 — Silent failures |
+| BLOCKER | Python `urllib.error.URLError` not caught — only `HTTPError` is in the targeted handler. DNS / timeout failures bypass tagged Sentry capture | Lens 1 — Silent failures |
+| BLOCKER | Secret fallback gate predicate fires too easily — staging with a local env var set silently switches secrets on Secrets Manager outage | Lens 1 — Silent failures |
+| BLOCKER | Public endpoint magic-byte sniff added but untested at unit level — integration runner sends `text/plain` and never reaches the magic-byte branch | Lens 3 — Test coverage |
+| FLAG | JWT verification missing `aud`/`client_id` validation — token from any App Client in the same OAuth pool passes | Lens 2 — Security |
+| FLAG | Admin email gate trusts `cognito:username` as fallback without `email_verified` check | Lens 2 — Security |
+| FLAG | Step-up cookie has no IP/UA binding — 30-min replay window if cookie compromised | Lens 2 — Security |
+| FLAG | Single-secret blast radius — same env var gates routine step-up AND nuclear reset capabilities | Lens 2 — Security |
 | ... | ... | ... |
 
 **Final tally: 4 BLOCKERS, 16 FLAGS, 7 NOTES.**
 
-The 5-standards pass alone returned **0 BLOCKERS**. The trio caught **4 production traps** the standards-based pass would have shipped.
+The 5-standards pass alone returned **0 BLOCKERS**. The three lenses caught **4 production traps** the standards-based pass would have shipped.
 
 ## The lesson
 
-The 5 standards check **patterns**. The specialists check **semantics**. For high-surface PRs (auth / Lambda / concurrent-write / scope-grew), running the standards alone ships things. Cadence's `cadence-pr-review` skill encodes this: Step 6 is the trio dispatch, mandatory when the trigger conditions fire.
+The 5 standards check **patterns**. The three lenses check **semantics**. For high-surface PRs (auth / Lambda / concurrent-write / scope-grew), running the standards alone ships things. Cadence's `cadence-pr-review` skill encodes this: Step 6 runs three additional review lenses inline, mandatory when the trigger conditions fire.
 
 This is the receipts. Cadence is the practice.

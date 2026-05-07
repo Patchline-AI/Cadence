@@ -49,9 +49,9 @@ git diff --name-only $ORIG_TIP $NEW_TIP | head -30
 |---|---|
 | 0–5 commits, all matching the original feature | Re-review delta only. Likely just feedback addressed. |
 | 1–10 files changed, ≤500 lines | Re-review delta only. Standards-based pass on touched files. |
-| **5+ commits, any from a different feature scope, OR 500+ added lines** | **Full specialist trio dispatch on the delta.** Scope grew. |
-| **Commit message mentions "(#N)" of an absorbed PR** | **Full specialist trio.** PR has absorbed another PR; trust boundary changed. |
-| Files outside the original PR's intent (e.g. `lib/admin-*` when the PR was supposed to be about `lib/vault/*`) | **Full specialist trio.** Scope crept. |
+| **5+ commits, any from a different feature scope, OR 500+ added lines** | **Run the three inline review lenses on the delta.** Scope grew. |
+| **Commit message mentions "(#N)" of an absorbed PR** | **Run the three inline review lenses.** PR has absorbed another PR; trust boundary changed. |
+| Files outside the original PR's intent (e.g. `lib/admin-*` when the PR was supposed to be about `lib/vault/*`) | **Run the three inline review lenses.** Scope crept. |
 
 ### 3. Verify each claim, in order
 
@@ -82,8 +82,8 @@ Compare the local result count to what the agent reported. Discrepancies (e.g. a
 After the scope-change check + claim verification:
 
 - **Ship it** — delta is small, all claims verified, no scope creep, original blocker/flag list addressed. Mark draft → ready, give merge command.
-- **One-round re-review on the delta** — scope grew within the same feature, dispatch standards-only on the new files (no specialist trio if delta < 5 files / < 500 lines).
-- **Full specialist trio re-dispatch** — scope grew across feature boundaries OR an absorbed PR brought new attack surface (admin auth, Lambda code, public endpoint). The trio runs in parallel for ~5 min; cheap insurance.
+- **One-round re-review on the delta** — scope grew within the same feature, run standards-only on the new files (no extra lenses if delta < 5 files / < 500 lines).
+- **Full re-review with the three lenses** — scope grew across feature boundaries OR an absorbed PR brought new attack surface (admin auth, Lambda code, public endpoint). The lenses are three additional review passes by the same skill, cheap insurance.
 - **Hold** — claim verification failed. Surface the discrepancy to the user before any review.
 
 ## What you do NOT do
@@ -102,7 +102,7 @@ Reality, surfaced by the scope-change check:
 - One commit was a merge of an entirely separate PR (different feature scope), bringing 416 new lines in a route handler, 272 lines in a service module, 333 lines in an admin-auth module, plus a new feedback file and a 190-line admin step-up session module.
 - 1,167 lines of dependency-lock churn — verified to be the transitive tree of one new package, legitimate.
 
-The architecture comment was real; the rest was not in the summary. Without the scope-change check, the second-round review would have shipped this with **4 BLOCKERS and 16 FLAGS** the parallel specialist trio caught on the new admin-auth surface (see `specialist-trio.md`).
+The architecture comment was real; the rest was not in the summary. Without the scope-change check, the second-round review would have shipped this with **4 BLOCKERS and 16 FLAGS** that the three inline review lenses caught on the new admin-auth surface (see `specialist-trio.md`).
 
 ## Operating rule
 

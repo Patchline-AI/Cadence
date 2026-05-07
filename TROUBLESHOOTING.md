@@ -24,11 +24,11 @@ Should list 3 files (`cadence-pr-review`, `cadence-research`, `cadence-sweep`). 
 
 ## Runtime issues
 
-### "5 standards run but specialist trio doesn't"
+### "5 standards run but the three review lenses don't"
 
-The trio fires only on high-surface PR detection. Trigger conditions are listed in `skills/cadence-pr-review/references/specialist-trio.md` § "When to dispatch." If your PR doesn't match any trigger, the standards alone are sufficient.
+The lenses fire only on high-surface PR detection. Trigger conditions are listed in `skills/cadence-pr-review/references/specialist-trio.md` § "When to dispatch." If your PR doesn't match any trigger, the standards alone are sufficient.
 
-To force trio dispatch on a PR you think should match: explicitly invoke `Use cadence-pr-review and dispatch the specialist trio`.
+To force the lenses on a PR you think should match: explicitly invoke `Use cadence-pr-review and run the three inline review lenses`.
 
 ### "Eval fixture's 5 findings aren't all flagged"
 

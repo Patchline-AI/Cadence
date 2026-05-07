@@ -1,6 +1,6 @@
 ---
 name: cadence-pr-review
-description: Run the five NVIDIA-derived Agent Review Standards against the current branch diff before opening a PR — Codebase Drift Detection, Conflicting PR Detection, Security Review, Architectural Alignment, Test Coverage Assessment — applied with concrete pattern checklists (concurrent-write rows, secret handling at boundaries, multi-agent config drift, real-data integration tests, test-suite enrollment). For HIGH-SURFACE PRs (auth/Lambda/concurrent-write/public-endpoint, OR PR has absorbed another PR), additionally dispatch the specialist trio in parallel — silent-failure-hunter + security-auditor + pr-test-analyzer — per `references/specialist-trio.md`. When another agent (Codex, etc.) pastes a "completion summary" or "PR opened" message, run the trust-but-verify drill in `references/scope-change-detection.md` BEFORE re-reviewing — scope often grew silently. Use BEFORE opening any PR, BEFORE merging, when reviewing another agent's PR completion summary, or whenever the user types `/cadence-pr-review`, "review my branch", "is this PR safe", "run the review standards", "another agent finished, here's the summary", or hands you a diff and asks "what's wrong with this." Trigger automatically when the assistant has just finished an edit-heavy turn that touched route handlers, service modules, lambda/serverless code, agent-orchestration config, auth middleware, secret-handling modules, auth modules, JWT/token-verification code, crypto-bound subsystems, or any rate-limit module.
+description: Run the five Agent Review Standards against the current branch diff before opening a PR — Codebase Drift Detection, Conflicting PR Detection, Security Review, Architectural Alignment, Test Coverage Assessment — applied with concrete pattern checklists (concurrent-write rows, secret handling at boundaries, multi-agent config drift, real-data integration tests, test-suite enrollment). For HIGH-SURFACE PRs (auth/Lambda/concurrent-write/public-endpoint, OR PR has absorbed another PR), additionally run three inline review lenses against the same diff — silent failures, security semantics, test-coverage semantics — per `references/specialist-trio.md`. When another agent (Codex, etc.) pastes a "completion summary" or "PR opened" message, run the trust-but-verify drill in `references/scope-change-detection.md` BEFORE re-reviewing — scope often grew silently. Use BEFORE opening any PR, BEFORE merging, when reviewing another agent's PR completion summary, or whenever the user types `/cadence-pr-review`, "review my branch", "is this PR safe", "run the review standards", "another agent finished, here's the summary", or hands you a diff and asks "what's wrong with this." Trigger automatically when the assistant has just finished an edit-heavy turn that touched route handlers, service modules, lambda/serverless code, agent-orchestration config, auth middleware, secret-handling modules, auth modules, JWT/token-verification code, crypto-bound subsystems, or any rate-limit module.
 ---
 
 # Cadence PR Review
@@ -112,46 +112,45 @@ Hard rules:
 - Bug fixes touching user-facing behavior or data writes MUST include a regression test that would have caught the bug.
 - Tests should exercise the failure mode, not just the happy path.
 
-## Step 6 — Specialist Trio Composition (high-surface PRs)
+## Step 6 — Specialist Trio (high-surface PRs)
 
-The 5 standards check **patterns**. They miss **semantics**. For high-surface PRs, the gate is incomplete without the specialist trio. See `references/specialist-trio.md` for full details.
+The 5 standards check **patterns**. They miss **semantics**. For high-surface PRs, run three additional review passes against the same diff, each with a different lens. These run as inline reviews in the same skill — no external subagents required.
 
 ### When the trio is MANDATORY (not optional)
 
-Dispatch all three specialists in parallel if **any** of:
+Dispatch all three lenses if **any** of:
 
-1. **Scope-grew check fired in Step 0** (PR has absorbed another PR / +500 lines since prior baseline / +5 commits across feature boundaries).
-2. **Touched files match any of:**
-   - auth modules and admin/sensitive routes
-   - internal-secret-gated endpoints
-   - serverless / Lambda code (especially Python `urllib`/`asyncio`/error-handling surfaces)
-   - crypto-bound subsystems
-   - Any `*-rate-limit*` module
+1. Scope-grew check fired in Step 0 (PR has absorbed another PR / +500 lines since prior baseline / +5 commits across feature boundaries).
+2. Touched files match any of:
+   - Auth modules (JWT/token verification, session cookies, admin gates, OAuth flows)
+   - Internal-secret-gated endpoints
+   - Serverless / Lambda code
+   - Crypto-bound subsystems
+   - Rate-limit modules
    - Any public unauthenticated endpoint with file upload
-3. **Diff includes any pattern:** `\.catch\(\(\) => null\)` · `} catch { /\* (swallow|ignore)` · `except HTTPError` (Python — should also catch URLError) · `if .* return` early-return on infra-unavailable
-4. **Concurrent-write boundary touched** (concurrent-write database tables)
+3. Diff includes any pattern: `\.catch\(\(\) => null\)` · `} catch { /\* (swallow|ignore)` · `except HTTPError` (Python) · `if .* return` early-return on infra-unavailable
+4. Concurrent-write boundary touched
 
-### Dispatch (single message, three Agent tool calls in parallel)
+### How to run the trio inline
 
-```
-Agent 1: subagent_type=silent-failure-hunter — swallowed exceptions, fail-closed obscuring outages, .catch(() => null) corrupting state, partial-success returning 200, observability gaps
-Agent 2: subagent_type=security-auditor — JWT aud/client_id, email_verified, session-cookie binding, single-secret blast radius, identity-hash bypass, body-buffer DoS, lock-takeover clock-skew, info disclosure, TOCTOU
-Agent 3: subagent_type=pr-test-analyzer — layered-but-not-composed, public endpoint magic-byte sniff untested at unit, missing regression tests for claimed fixes, expired-cookie/mismatched-userId branches uncovered
-```
+After producing the 5-standard report, run three additional review passes against the same diff. Use the lens prompts below verbatim for each pass:
 
-Each agent gets the **delta range** to focus on, not the full PR scope. Tell each: "Don't re-flag findings the 5 standards already caught."
+**Lens 1 — Silent failures.**
+Hunt for swallowed exceptions, fail-closed semantics that obscure outages, `.catch(() => null)` patterns that corrupt downstream state, partial-success returning 200, ungated observability capture (Sentry / equivalent gated only by env-var presence so dev is silent), narrow Python exception classes that miss real failure modes (e.g. `except HTTPError` without `URLError`), generic 500 returns with no correlation token. Report findings against the diff.
 
-### Deduplication after the trio returns
+**Lens 2 — Security.**
+Audit trust boundaries: JWT `aud` / `client_id` validation, `email_verified` enforcement, session-cookie binding to identity claims, single-secret blast radius (one env var gating two surfaces of different criticality), identity-hash bypass on rate limiters (e.g. UA included in identity = trivial rotation bypass), body-buffer DoS (oversized body parsed before rate-limit check), lock-takeover clock-skew, info disclosure via response shapes that leak internal IDs. Report findings against the diff.
 
-Findings on the same file from different specialists are **complementary, not redundant**. Keep all three angles. Reference matrix in `references/specialist-trio.md` § "Deduplication after the trio returns."
+**Lens 3 — Test coverage semantics.**
+Audit test-vs-implementation composition: each layer mocked individually but never composed end-to-end, public-endpoint pre-auth gates added but only tested via integration runners that fail at an earlier gate and never reach the new one, regression tests missing for the failure modes the PR claims to fix, mismatched-field branches uncovered (e.g. `body.userId !== resource.userId` returning 409 but the path has no test), expired-credential branches uncovered. Report findings against the diff.
 
 ### Severity calibration
 
-Use the specialist's own severity tag as the floor. **Do not downgrade a specialist's BLOCKER to FLAG** because the 5 standards passed cleanly — that's the reason the trio exists.
+Use each lens's findings at the severity it returns. **Do not downgrade a lens-flagged BLOCKER to FLAG** because the 5 standards passed cleanly — that's the reason the lenses exist.
 
 ### Reference field test (May 2026)
 
-A real high-surface PR scored 0 blockers under the 5 standards alone. Adding the parallel specialist trio surfaced **4 blockers and 16 flags** that would have shipped to production — including a rate-limit fail-closed-as-throttle conflation, a Python `urllib.error.URLError` bypass in a Lambda handler, a secret-fallback gate predicate, and a public endpoint whose magic-byte sniff was untested at the unit level. Receipts in `references/specialist-trio.md` § "Reference cases."
+5 standards alone returned 0 BLOCKERS, 1 FLAG on a real high-surface PR. Adding the three inline lenses surfaced **4 BLOCKERS, 16 FLAGS, 7 NOTES** — including a rate-limit fail-closed-as-throttle conflation, a Python `urllib.error.URLError` bypass in a Lambda handler, a secret-fallback gate predicate, and a public endpoint whose magic-byte sniff was untested at unit level.
 
 ## Output format
 
@@ -189,9 +188,9 @@ Severity rule: BLOCKER if violation of a hard rule from any standard, FLAG if pa
 
 ## Acceptance: against the sample-pr fixture
 
-Run yourself against `evals/sample-pr.diff` and verify your report flags ALL five of:
+Run yourself against `evals/sample-pr/` and verify your report flags ALL five of:
 1. Concurrency guard missing on a database write that uses a full-row replace pattern (Standard 3, BLOCKER)
-2. Per-item failure semantics — a single throw in a loop collapses the whole request to a generic 500 (Standard 4, BLOCKER)
+2. Generic 500 with no Sentry capture, no error ID, no per-item failure semantics (Standard 4, BLOCKER)
 3. Item-size risk — large nested objects embedded per record without a size cap (Standard 4, FLAG)
 4. Missing regression test for the stale-write race the fix claims to address (Standard 5, BLOCKER)
 5. Owned-field `SET` pattern not used — write replaces broader fields than necessary (Standard 4, FLAG)

@@ -72,15 +72,15 @@ Cadence ships these as the `cadence-pr-review` skill.
 
 ## Where the standards stop and the specialists start
 
-The 5 standards are deterministic, pattern-based checks. They miss **semantics**. For high-surface PRs (auth surface, Lambda code, concurrent-write paths, public unauthenticated endpoints, or any PR that has absorbed another PR via merge), the gate is incomplete without a parallel specialist pass.
+The 5 standards are deterministic, pattern-based checks. They miss **semantics**. For high-surface PRs (auth surface, Lambda code, concurrent-write paths, public unauthenticated endpoints, or any PR that has absorbed another PR via merge), the gate is incomplete without a follow-up semantic pass.
 
-Cadence ships the **specialist trio** dispatch pattern: `silent-failure-hunter` + `security-auditor` + `pr-test-analyzer` running in parallel on the same diff. Each specialist catches a class of finding the standards miss:
+Cadence ships **three additional review lenses** that run inline as part of the same skill — no external subagents required. Each lens looks at the same diff through a different angle:
 
-- Silent-failure hunter catches `.catch(() => null)` corrupting downstream state, fail-closed semantics that obscure outages, ungated Sentry capture, partial-success returning 200.
-- Security auditor catches JWT `aud`/`client_id` validation gaps, single-secret blast radius, identity-hash bypass, body-buffer DoS, lock-takeover clock-skew, info disclosure.
-- PR test analyzer catches layered-but-not-composed integration tests, public endpoint magic-byte sniffs that exist but are tested only via vacuous integration runners, regression tests missing for claimed fixes.
+- **Lens 1 — Silent failures.** Catches `.catch(() => null)` corrupting downstream state, fail-closed semantics that obscure outages, ungated Sentry capture, partial-success returning 200.
+- **Lens 2 — Security.** Catches JWT `aud`/`client_id` validation gaps, single-secret blast radius, identity-hash bypass, body-buffer DoS, lock-takeover clock-skew, info disclosure.
+- **Lens 3 — Test coverage semantics.** Catches layered-but-not-composed integration tests, public endpoint magic-byte sniffs that exist but are tested only via vacuous integration runners, regression tests missing for claimed fixes.
 
-**The receipts:** in the field test that produced this plugin, the 5 standards alone returned 0 blockers on a real PR. The trio caught **4 production traps** the standards-based pass would have shipped. See [`docs/examples/reviewing-an-agent-pr.md`](./examples/reviewing-an-agent-pr.md) for the worked example.
+**The receipts:** in the field test that produced this plugin, the 5 standards alone returned 0 blockers on a real PR. The three lenses caught **4 production traps** the standards-based pass would have shipped. See [`docs/examples/reviewing-an-agent-pr.md`](./examples/reviewing-an-agent-pr.md) for the worked example.
 
 ## When another agent hands you a PR completion summary
 
@@ -88,6 +88,6 @@ A cousin pattern. When Codex / Claude Code / similar agents finish work and past
 
 ## Attribution
 
-The Research / Gates / Sweeps framing, the five Agent Review Standards, and the layered PR gate budgets were anchored by talks at **AI Agents 2026** — most directly Julie Yaunches' *Accelerated Engineering*, with reinforcing material across the conference (observability-as-verification, quality gates between research and production, the data/semantic/agent/trust layered stack). The specialist trio dispatch pattern, the scope-change drill, and the sweep-to-gate ratchet are this plugin's contribution on top.
+The Research / Gates / Sweeps framing, the five Agent Review Standards, and the layered PR gate budgets were anchored by talks at **AI Agents 2026**, with reinforcing material across the conference (observability-as-verification, quality gates between research and production, the data/semantic/agent/trust layered stack). The three inline review lenses, the scope-change drill, and the sweep-to-gate ratchet are this plugin's contribution on top.
 
-See [`reference/attribution.md`](../reference/attribution.md) for the full citation and quote inventory.
+See [`reference/attribution.md`](../reference/attribution.md) for the full citation.

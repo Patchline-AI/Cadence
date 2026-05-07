@@ -43,7 +43,7 @@
 - Required test cases for any audio-upload public endpoint: `audio/mpeg` MIME + bad bytes → 415; `audio/wav` + RIFF-only-no-WAVE → 415; `application/octet-stream` + valid signature → 200; oversized content-length → 413 BEFORE body parse.
 
 ### Mismatched-field / cross-reference branches
-- For any route that takes both an entity ID AND a denormalized field (e.g. `body.assetId` AND `body.userId`), the **mismatch path** must be tested. Reference (May 2026 field test): a vault notify route returns 409 when `body.userId !== asset.userId` — the original PR shipped without that test, the security-auditor caught it.
+- For any route that takes both an entity ID AND a denormalized field (e.g. `body.assetId` AND `body.userId`), the **mismatch path** must be tested. Reference (May 2026 field test): a vault notify route returns 409 when `body.userId !== asset.userId` — the original PR shipped without that test, the Security lens caught it.
 
 ## Soft rules (FLAG)
 

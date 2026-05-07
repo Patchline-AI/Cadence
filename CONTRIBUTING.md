@@ -26,13 +26,13 @@ Thanks for considering a contribution.
 
 ## Eval discipline
 
-Every new pattern in a standard's reference doc should come with a fixture line in `evals/sample-pr.diff` (or a new `evals/<scenario>.diff`) and an entry in `expected-findings.md`. Patterns without evals are not enforceable.
+Every new pattern in a standard's reference doc should come with a fixture file under `evals/sample-pr/` (or a new `evals/<scenario>/` directory) and an entry in `expected-findings.md`. Patterns without evals are not enforceable.
 
 ## Style
 
 - Markdown headers: ATX (`#`), not Setext.
 - Code blocks: fenced with language hint.
-- Quote NVIDIA verbatim text in italics with attribution; everything else in your own words.
+- Keep verbatim quotes from external talks short and italicized with attribution; otherwise paraphrase in your own words.
 - No emojis in skill files; emojis in user-facing docs are fine but sparing.
 
 ## Conduct
