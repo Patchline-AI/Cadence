@@ -2,6 +2,29 @@
 
 ## Install issues
 
+### "`/plugin` is not available in my Claude Code build"
+
+Some Claude Code builds do not expose plugin commands yet. Install Cadence by
+cloning the repo and symlinking its three skills instead.
+
+macOS / Linux:
+
+```bash
+git clone https://github.com/Patchline-AI/Cadence.git ~/.claude-cadence
+bash ~/.claude-cadence/scripts/install.sh
+```
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/Patchline-AI/Cadence.git "$env:USERPROFILE\.claude-cadence"
+pwsh "$env:USERPROFILE\.claude-cadence\scripts\install.ps1"
+```
+
+The installer links `cadence-pr-review`, `cadence-research`, and
+`cadence-sweep` into your Claude skills directory. It skips any existing
+non-symlink skill directory instead of overwriting it.
+
 ### "Skill not found after `/reload-plugins`"
 
 Verify the manifest parses:
@@ -11,6 +34,14 @@ node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json'))"
 ```
 
 Should print nothing and exit 0. If it errors, fix the JSON syntax.
+
+If you installed through `/plugin`, make sure the Patchline AI marketplace was
+added from `Patchline-AI/Aria`:
+
+```bash
+/plugin marketplace add Patchline-AI/Aria
+/plugin install cadence@patchline-ai
+```
 
 ### "Plugin shows but skills don't appear"
 

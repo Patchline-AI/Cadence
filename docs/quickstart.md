@@ -7,9 +7,29 @@ Five minutes from `git clone` to a working PR review.
 In Claude Code:
 
 ```bash
-/plugin marketplace add Patchline-AI/Cadence
+/plugin marketplace add Patchline-AI/Aria
 /plugin install cadence@patchline-ai
 /reload-plugins
+```
+
+Run the commands one at a time. The Patchline AI marketplace is hosted from the
+Aria repo and includes Cadence as a second plugin entry.
+
+If your Claude Code build does not expose `/plugin` yet, use the manual
+symlink installer:
+
+macOS / Linux:
+
+```bash
+git clone https://github.com/Patchline-AI/Cadence.git ~/.claude-cadence
+bash ~/.claude-cadence/scripts/install.sh
+```
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/Patchline-AI/Cadence.git "$env:USERPROFILE\.claude-cadence"
+pwsh "$env:USERPROFILE\.claude-cadence\scripts\install.ps1"
 ```
 
 After `/reload-plugins`, Cadence's three skills are available:

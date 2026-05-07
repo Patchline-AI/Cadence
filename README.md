@@ -9,13 +9,30 @@
 When agents produce code 10–50× faster than your CI absorbs it, quality stops being a single review moment and becomes a recurring practice. Cadence ships the practice as installable Claude Code skills.
 
 ```bash
-# In Claude Code
-/plugin marketplace add Patchline-AI/Cadence
+# In Claude Code, run one command at a time
+/plugin marketplace add Patchline-AI/Aria
 /plugin install cadence@patchline-ai
 /reload-plugins
 ```
 
-No MCP server. No external account. Pure local skills.
+The Patchline AI marketplace is hosted from the Aria repo and includes Cadence
+as a second plugin entry. Cadence itself has no MCP server and no external
+account requirement: it installs pure local skills.
+
+If your Claude Code build does not expose `/plugin` yet, use the manual
+symlink installer instead:
+
+```bash
+git clone https://github.com/Patchline-AI/Cadence.git ~/.claude-cadence
+bash ~/.claude-cadence/scripts/install.sh
+```
+
+On Windows PowerShell:
+
+```powershell
+git clone https://github.com/Patchline-AI/Cadence.git "$env:USERPROFILE\.claude-cadence"
+pwsh "$env:USERPROFILE\.claude-cadence\scripts\install.ps1"
+```
 
 ---
 
