@@ -25,6 +25,13 @@ The Patchline AI marketplace is hosted from the Aria repo and lists Cadence as a
 ✔ Successfully added marketplace: patchline-ai (declared in user settings)
 ```
 
+If you added the Patchline marketplace during an earlier alpha, refresh the
+local marketplace cache first:
+
+```bash
+claude plugin marketplace update patchline-ai
+```
+
 ### Step 2 — install the plugin (inside Claude Code)
 
 Now start a Claude Code session (`claude`), then run these as slash commands inside the session:

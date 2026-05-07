@@ -42,6 +42,13 @@ added from `Patchline-AI/Aria` in your plain shell, not inside a Claude chat:
 claude plugin marketplace add Patchline-AI/Aria
 ```
 
+If you added the marketplace before Cadence v0.1.0-alpha.3, refresh the local
+marketplace cache:
+
+```bash
+claude plugin marketplace update patchline-ai
+```
+
 Then start Claude Code and run:
 
 ```text

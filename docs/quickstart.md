@@ -14,6 +14,12 @@ claude plugin marketplace add Patchline-AI/Aria
 
 Expected: `✔ Successfully added marketplace: patchline-ai (declared in user settings)`
 
+If you added the Patchline marketplace during an earlier alpha, refresh it:
+
+```bash
+claude plugin marketplace update patchline-ai
+```
+
 **Step 2 — inside a Claude Code session** (run `claude` to start one, then):
 
 ```text

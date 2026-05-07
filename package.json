@@ -1,6 +1,6 @@
 {
   "name": "cadence",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "private": true,
   "description": "Cadence plugin — devDependencies for markdownlint and CI tooling.",
   "scripts": {
