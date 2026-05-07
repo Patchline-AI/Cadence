@@ -2,7 +2,7 @@
 
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Plugin-D97757)](https://docs.claude.com/en/docs/claude-code/plugins)
 [![License: MIT](https://img.shields.io/badge/License-MIT-0068FF)](./LICENSE)
-[![Version](https://img.shields.io/badge/version-0.1.0--alpha-00E6E2)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.1.0--alpha.4-00E6E2)](./CHANGELOG.md)
 
 **Quality at agentic velocity. Research, Gates, Sweeps.**
 
@@ -165,9 +165,12 @@ Three things this plugin does that a generic "code review" tool doesn't:
 
 The skills ship with **generic patterns** that apply to most codebases. To layer your codebase-specific patterns:
 
-1. Edit `~/.claude/skills/cadence-pr-review/references/<standard>.md` after install.
-2. Add your patterns to the relevant standard's checklist.
-3. The skill picks them up on next invocation.
+1. Inside Claude Code, run `/plugin info cadence` to find the install path. On `/plugin install` it lands at `~/.claude/plugins/cache/patchline-ai/cadence/<version>/`. The fallback symlink installer puts it at `~/.claude/skills/cadence-pr-review/`.
+2. Edit `<install-path>/skills/cadence-pr-review/references/<standard>.md`.
+3. Add your patterns to the relevant standard's checklist.
+4. Run `/reload-plugins` (or restart the session). The skill picks up the changes on next invocation.
+
+Direct edits inside the plugin cache can be overwritten by reinstall/update. If your patterns become team policy, fork Cadence or vendor the reference files into your own team skill.
 
 This is the migration path: install with the generic patterns, layer your specifics on top.
 
