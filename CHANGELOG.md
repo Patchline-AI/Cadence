@@ -12,4 +12,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `cadence-research` skill — diagram-as-research thinking pattern.
 - `cadence-sweep` skill — daily/weekly/monthly/quarterly sweep cadence with sweep-to-gate ratchet.
 - Methodology doc and quickstart.
-- Acceptance evals against a sample PR diff.
+- Acceptance evals against a sample PR fixture (`evals/sample-pr/route.ts` + `route.test.ts`).

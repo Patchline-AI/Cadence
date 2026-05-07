@@ -68,7 +68,7 @@ Three pillars on three rhythms. See [`docs/methodology.md`](./docs/methodology.m
 
 ## The receipts
 
-In the field test that produced this plugin, a real high-surface PR scored **0 BLOCKERS** under the 5 standards alone. Adding the three additional review lenses (silent failures, security semantics, test-coverage semantics) surfaced **4 BLOCKERS and 16 FLAGS** that would have shipped to production — including a rate-limit fail-closed-as-throttle conflation, a Python `urllib.error.URLError` bypass in a Lambda handler, a secret-fallback gate predicate, and a public endpoint whose magic-byte sniff was untested at the unit level.
+In the field test that produced this plugin, a real high-surface PR scored **0 BLOCKERS** under the 5 standards alone. Three specialist review angles — silent-failure semantics, security semantics, and test-coverage semantics — surfaced **4 BLOCKERS and 16 FLAGS** that would have shipped to production, including a rate-limit fail-closed-as-throttle conflation, a Python `urllib.error.URLError` bypass in a Lambda handler, a secret-fallback gate predicate, and a public endpoint whose magic-byte sniff was untested at the unit level. Cadence packages those three angles as inline review lenses you run as part of the same skill.
 
 The 5 standards check **patterns**. The lenses check **semantics**. Both are necessary for high-surface code.
 
