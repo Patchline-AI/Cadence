@@ -190,7 +190,7 @@ Severity rule: BLOCKER if violation of a hard rule from any standard, FLAG if pa
 
 Run yourself against `evals/sample-pr/` and verify your report flags ALL five of:
 1. Concurrency guard missing on a database write that uses a full-row replace pattern (Standard 3, BLOCKER)
-2. Generic 500 with no Sentry capture, no error ID, no per-item failure semantics (Standard 4, BLOCKER)
+2. Generic 500 with no Sentry capture and no error ID (Standard 4, BLOCKER)
 3. Item-size risk — large nested objects embedded per record without a size cap (Standard 4, FLAG)
 4. Missing regression test for the stale-write race the fix claims to address (Standard 5, BLOCKER)
 5. Owned-field `SET` pattern not used — write replaces broader fields than necessary (Standard 4, FLAG)

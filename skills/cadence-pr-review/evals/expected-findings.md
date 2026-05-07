@@ -4,6 +4,8 @@ A correctly-functioning `cadence-pr-review` invocation should flag ALL FIVE of t
 
 ---
 
+> **Fictional context:** the fixture pretends these files live at `app/api/projects/[id]/attach-items/route.ts` (and its colocated `route.test.ts`) in a hypothetical Next.js app. They actually live at `evals/sample-pr/route.ts` and `evals/sample-pr/route.test.ts` in this repo so reviewers can read them directly. Findings below cite the **fixture-as-it-would-ship paths** so the rubric reads like a real review report; the locator strings are unique enough to anchor against either path.
+>
 > Findings are anchored by file path + the textual context of the issue. Line numbers intentionally omitted so the fixture can evolve without invalidating the calibration set.
 
 ## BLOCKER 1 — Concurrency guard missing on `Projects-prod` write (Standard 3, Security)
@@ -13,7 +15,7 @@ A correctly-functioning `cadence-pr-review` invocation should flag ALL FIVE of t
 **Why:** The `PutCommand` performs a full-row replace without an `expectedUpdatedAt` ConditionExpression. Two concurrent POSTs both reading the row at time T will each compute `merged` against the stale view and the second write silently wipes the first writer's items.
 **Fix:** Replace `PutCommand` with `UpdateCommand` using `SET items = list_append(...)` + `ConditionExpression: "updatedAt = :expectedUpdatedAt"`. On `ConditionalCheckFailedException`, surface a "project changed elsewhere — refresh" UX. Reference: optimistic concurrency.
 
-## BLOCKER 2 — Generic 500 with no Sentry capture, no error ID, no per-item failure semantics (Standard 4, Architectural Alignment)
+## BLOCKER 2 — Generic 500 with no Sentry capture and no error ID (Standard 4, Architectural Alignment)
 
 **File:** `app/api/projects/[id]/attach-items/route.ts`
 **Locator:** the outer `catch (err)` that does `console.error("attach-items failed:", err)` followed by `NextResponse.json({ error: "Failed to attach items" }, { status: 500 })`.
