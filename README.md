@@ -8,19 +8,55 @@
 
 When agents produce code 10–50× faster than your CI absorbs it, quality stops being a single review moment and becomes a recurring practice. Cadence ships the practice as installable Claude Code skills.
 
+## Install
+
+Two steps. The first step is a **shell command, not a slash command** — run it from a plain terminal, not from inside a Claude Code chat session.
+
+### Step 1 — add the marketplace (plain terminal)
+
 ```bash
-# In Claude Code, run one command at a time
-/plugin marketplace add Patchline-AI/Aria
+# Run this in your shell, NOT inside a /chat session
+claude plugin marketplace add Patchline-AI/Aria
+```
+
+The Patchline AI marketplace is hosted from the Aria repo and lists Cadence as a second plugin entry. Expected output:
+
+```
+✔ Successfully added marketplace: patchline-ai (declared in user settings)
+```
+
+### Step 2 — install the plugin (inside Claude Code)
+
+Now start a Claude Code session (`claude`), then run these as slash commands inside the session:
+
+```text
 /plugin install cadence@patchline-ai
 /reload-plugins
 ```
 
-The Patchline AI marketplace is hosted from the Aria repo and includes Cadence
-as a second plugin entry. Cadence itself has no MCP server and no external
-account requirement: it installs pure local skills.
+Expected output: `✓ Installed cadence. Run /reload-plugins to apply.` followed by `Reloaded: 1 plugin · …`. Cadence has no MCP server and no external account: it installs pure local skills.
 
-If your Claude Code build does not expose `/plugin` yet, use the manual
-symlink installer instead:
+### Try it — first runs after install
+
+Inside the same Claude Code session, ask:
+
+```text
+Run a weekly sweep on this repo.
+```
+
+That triggers `cadence-sweep` to walk through the weekly drift checks and print findings + the gate-upgrade PRs each finding implies. Two more concrete first runs:
+
+```text
+Use cadence-pr-review on the current branch.
+```
+
+```text
+Run cadence-research on <subsystem-or-file> before I touch it.
+```
+
+### Fallback installer (when `/plugin` is not in your Claude Code build)
+
+Some older Claude Code builds don't expose `/plugin` yet. Symlink installer instead:
 
 ```bash
 git clone https://github.com/Patchline-AI/Cadence.git ~/.claude-cadence
@@ -36,11 +72,15 @@ pwsh "$env:USERPROFILE\.claude-cadence\scripts\install.ps1"
 
 ---
 
-## What you get
+## What you get — three skills on three different rhythms
 
-- **`cadence-pr-review`** — five Agent Review Standards (Codebase Drift, Conflicting PR, Security, Architectural Alignment, Test Coverage), plus three additional review lenses (silent failures, security semantics, test-coverage semantics) for high-surface PRs, plus a scope-change drill for receiving agent completion summaries.
-- **`cadence-research`** — the four-move research practice (map / inspect history / find seams / produce artifact) plus diagram-as-research thinking.
-- **`cadence-sweep`** — the daily / weekly / monthly / quarterly sweep cadence with the sweep-to-gate ratchet.
+Each skill maps to one of the three pillars. They fire on different cadences for a reason — see [Methodology](./docs/methodology.md).
+
+| Skill | Pillar | When it fires | What it does |
+|---|---|---|---|
+| **`cadence-research`** | Research | Per-task, BEFORE work | Four-move research practice (map / inspect history / find seams / produce artifact) plus diagram-as-research thinking. Use before non-trivial changes — auth surfaces, concurrent-write paths, multi-agent config. |
+| **`cadence-pr-review`** | Gates | Event-driven, AT change boundaries | Five Agent Review Standards (Codebase Drift, Conflicting PR, Security, Architectural Alignment, Test Coverage) + three additional review lenses for high-surface PRs (silent failures, security semantics, test-coverage semantics) + a scope-change drill for receiving agent completion summaries. Use before opening any PR. |
+| **`cadence-sweep`** | Sweeps | Recurring (daily / weekly / monthly / quarterly) | Drift cleanup the gates can't catch (flaky tests, dependency lag, repeated review patterns) with the sweep-to-gate ratchet — every sweep ships TWO things: cleanup PR AND a gate-upgrade PR. |
 
 ## The methodology
 

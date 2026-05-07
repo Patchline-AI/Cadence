@@ -4,16 +4,24 @@ Five minutes from `git clone` to a working PR review.
 
 ## Install
 
-In Claude Code:
+Two steps. Step 1 runs in your **plain shell**. Step 2 runs **inside a Claude Code session**.
+
+**Step 1 — plain shell (NOT inside Claude):**
 
 ```bash
-/plugin marketplace add Patchline-AI/Aria
+claude plugin marketplace add Patchline-AI/Aria
+```
+
+Expected: `✔ Successfully added marketplace: patchline-ai (declared in user settings)`
+
+**Step 2 — inside a Claude Code session** (run `claude` to start one, then):
+
+```text
 /plugin install cadence@patchline-ai
 /reload-plugins
 ```
 
-Run the commands one at a time. The Patchline AI marketplace is hosted from the
-Aria repo and includes Cadence as a second plugin entry.
+Expected: `✓ Installed cadence` then `Reloaded: 1 plugin · …`. The Patchline AI marketplace is hosted from the Aria repo and lists Cadence as a second plugin entry.
 
 If your Claude Code build does not expose `/plugin` yet, use the manual
 symlink installer:
