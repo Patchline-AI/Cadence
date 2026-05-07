@@ -1,0 +1,26 @@
+{
+  "name": "cadence",
+  "description": "Cadence — agentic coding quality, operationalized. Research before work, Gates at change boundaries, Sweeps on a recurring rhythm. Implements NVIDIA's Accelerated Engineering framework as installable Claude Code skills, plus a specialist trio dispatch pattern and a trust-but-verify drill for receiving agent completion summaries.",
+  "version": "0.1.0-alpha",
+  "author": {
+    "name": "Patchline AI",
+    "url": "https://patchline.ai"
+  },
+  "homepage": "https://github.com/Patchline-AI/Cadence",
+  "repository": "https://github.com/Patchline-AI/Cadence",
+  "license": "MIT",
+  "skills": "./skills/",
+  "keywords": [
+    "claude-code",
+    "pr-review",
+    "code-review",
+    "agentic-coding",
+    "nvidia",
+    "research-gates-sweeps",
+    "specialist-trio",
+    "quality",
+    "validation",
+    "skills",
+    "plugin"
+  ]
+}
