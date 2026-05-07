@@ -1,6 +1,6 @@
 {
   "name": "cadence",
-  "description": "Cadence — agentic coding quality, operationalized. Research before work, Gates at change boundaries, Sweeps on a recurring rhythm. Implements NVIDIA's Accelerated Engineering framework as installable Claude Code skills, plus a specialist trio dispatch pattern and a trust-but-verify drill for receiving agent completion summaries.",
+  "description": "Cadence — agentic coding quality, operationalized. Three pillars on three rhythms (Research / Gates / Sweeps), inspired by talks at AI Agents 2026, with the specialist-lens dispatch and scope-change drill as Patchline's contribution. Install once, reload plugins, then use cadence-pr-review on any branch.",
   "version": "0.1.0-alpha",
   "author": {
     "name": "Patchline AI",
@@ -15,9 +15,8 @@
     "pr-review",
     "code-review",
     "agentic-coding",
-    "nvidia",
+    "ai-agents-2026",
     "research-gates-sweeps",
-    "specialist-trio",
     "quality",
     "validation",
     "skills",

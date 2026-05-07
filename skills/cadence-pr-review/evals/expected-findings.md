@@ -1,9 +1,11 @@
-# Expected findings — sample-pr.diff
+# Expected findings — sample-pr/
 
-A correctly-functioning `cadence-pr-review` invocation should flag ALL FIVE of the following against `evals/sample-pr.diff`. Missing any of them indicates the skill or the model harness needs tightening.
+A correctly-functioning `cadence-pr-review` invocation should flag ALL FIVE of the following against the files in `evals/sample-pr/` (`route.ts` and `route.test.ts`). Missing any of them indicates the skill or the model harness needs tightening.
 
 ---
 
+> **Fictional context:** the fixture pretends these files live at `app/api/projects/[id]/attach-items/route.ts` (and its colocated `route.test.ts`) in a hypothetical Next.js app. They actually live at `evals/sample-pr/route.ts` and `evals/sample-pr/route.test.ts` in this repo so reviewers can read them directly. Findings below cite the **fixture-as-it-would-ship paths** so the rubric reads like a real review report; the locator strings are unique enough to anchor against either path.
+>
 > Findings are anchored by file path + the textual context of the issue. Line numbers intentionally omitted so the fixture can evolve without invalidating the calibration set.
 
 ## BLOCKER 1 — Concurrency guard missing on `Projects-prod` write (Standard 3, Security)

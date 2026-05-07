@@ -2,6 +2,29 @@
 
 ## Install issues
 
+### "`/plugin` is not available in my Claude Code build"
+
+Some Claude Code builds do not expose plugin commands yet. Install Cadence by
+cloning the repo and symlinking its three skills instead.
+
+macOS / Linux:
+
+```bash
+git clone https://github.com/Patchline-AI/Cadence.git ~/.claude-cadence
+bash ~/.claude-cadence/scripts/install.sh
+```
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/Patchline-AI/Cadence.git "$env:USERPROFILE\.claude-cadence"
+pwsh "$env:USERPROFILE\.claude-cadence\scripts\install.ps1"
+```
+
+The installer links `cadence-pr-review`, `cadence-research`, and
+`cadence-sweep` into your Claude skills directory. It skips any existing
+non-symlink skill directory instead of overwriting it.
+
 ### "Skill not found after `/reload-plugins`"
 
 Verify the manifest parses:
@@ -11,6 +34,14 @@ node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json'))"
 ```
 
 Should print nothing and exit 0. If it errors, fix the JSON syntax.
+
+If you installed through `/plugin`, make sure the Patchline AI marketplace was
+added from `Patchline-AI/Aria`:
+
+```bash
+/plugin marketplace add Patchline-AI/Aria
+/plugin install cadence@patchline-ai
+```
 
 ### "Plugin shows but skills don't appear"
 
@@ -24,11 +55,11 @@ Should list 3 files (`cadence-pr-review`, `cadence-research`, `cadence-sweep`). 
 
 ## Runtime issues
 
-### "5 standards run but specialist trio doesn't"
+### "5 standards run but the three review lenses don't"
 
-The trio fires only on high-surface PR detection. Trigger conditions are listed in `skills/cadence-pr-review/references/specialist-trio.md` § "When to dispatch." If your PR doesn't match any trigger, the standards alone are sufficient.
+The lenses fire only on high-surface PR detection. Trigger conditions are listed in `skills/cadence-pr-review/references/specialist-trio.md` § "When to dispatch." If your PR doesn't match any trigger, the standards alone are sufficient.
 
-To force trio dispatch on a PR you think should match: explicitly invoke `Use cadence-pr-review and dispatch the specialist trio`.
+To force the lenses on a PR you think should match: explicitly invoke `Use cadence-pr-review and run the three inline review lenses`.
 
 ### "Eval fixture's 5 findings aren't all flagged"
 

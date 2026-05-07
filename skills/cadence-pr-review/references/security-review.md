@@ -34,7 +34,7 @@
 - **`token_use` claim MUST be enforced unconditionally.** Pattern `if (tokenUse && tokenUse !== expected)` silently passes when the claim is absent. Use `if (!tokenUse || tokenUse !== expected) throw`.
 - **Admin email gates MUST check `email_verified === true`** before whitelist comparison. Cognito allows JWTs to be issued with unverified emails depending on PreSignUp/PostConfirmation lambdas.
 - **Never use `cognito:username` as an email fallback.** That claim is the Cognito-internal username, which can be set to any string at signup. An attacker registering with an admin's email as their chosen username gets a JWT where `cognito:username` matches an admin email even though `email` is something else.
-- (May 2026 field test: an admin-auth module shipped with `(payload.email as string) || (payload['cognito:username'] as string)` and no `email_verified` check — caught by independent security-auditor pass.)
+- (May 2026 field test: an admin-auth module shipped with `(payload.email as string) || (payload['cognito:username'] as string)` and no `email_verified` check — caught by the Security lens, not the 5-standard pass.)
 
 ### Step-up sessions / sensitive-action cookies
 - **Step-up cookie MUST bind to `userId` (Cognito `sub`) on BOTH sides.** `if (a.userId && b.userId && a.userId !== b.userId)` is wrong — when either side is missing, the check silently skips. Either reject early when `userId` is undefined, OR fall back to email-only with a louder warning.

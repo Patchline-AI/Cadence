@@ -7,9 +7,29 @@ Five minutes from `git clone` to a working PR review.
 In Claude Code:
 
 ```bash
-/plugin marketplace add Patchline-AI/Cadence
+/plugin marketplace add Patchline-AI/Aria
 /plugin install cadence@patchline-ai
 /reload-plugins
+```
+
+Run the commands one at a time. The Patchline AI marketplace is hosted from the
+Aria repo and includes Cadence as a second plugin entry.
+
+If your Claude Code build does not expose `/plugin` yet, use the manual
+symlink installer:
+
+macOS / Linux:
+
+```bash
+git clone https://github.com/Patchline-AI/Cadence.git ~/.claude-cadence
+bash ~/.claude-cadence/scripts/install.sh
+```
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/Patchline-AI/Cadence.git "$env:USERPROFILE\.claude-cadence"
+pwsh "$env:USERPROFILE\.claude-cadence\scripts\install.ps1"
 ```
 
 After `/reload-plugins`, Cadence's three skills are available:
@@ -27,24 +47,19 @@ In any branch with a real diff:
 Use cadence-pr-review on this branch.
 ```
 
-Claude announces "I'm using the cadence-pr-review skill" and produces a report against `origin/main...HEAD` with the 5 NVIDIA Agent Review Standards.
+Claude announces "I'm using the cadence-pr-review skill" and produces a report against `origin/main...HEAD` with the 5 Agent Review Standards.
 
 ## Verify against the fixture
 
-```bash
-git checkout <fresh-branch>
-# Apply the sample fixture as if it were your branch's diff
-git apply --check skills/cadence-pr-review/evals/sample-pr.diff || git apply skills/cadence-pr-review/evals/sample-pr.diff
-git add . && git commit -m "test: cadence eval fixture"
-```
+The fixture lives at `skills/cadence-pr-review/evals/sample-pr/` — a directory with a deliberately-bad `route.ts` and an inadequate `route.test.ts`.
 
-Then in Claude Code:
+In Claude Code:
 
 ```text
-Use cadence-pr-review.
+Use cadence-pr-review on the files in skills/cadence-pr-review/evals/sample-pr/ against skills/cadence-pr-review/evals/expected-findings.md.
 ```
 
-Report should flag all 5 findings from `evals/expected-findings.md`. If it misses any: the skill needs tightening.
+Report should flag all 5 findings from `evals/expected-findings.md` (3 BLOCKERS, 2 FLAGS). If it misses any: the skill needs tightening.
 
 ## Four workflows
 
@@ -54,7 +69,7 @@ Report should flag all 5 findings from `evals/expected-findings.md`. If it misse
 Use cadence-pr-review.
 ```
 
-Output: 5-standards report. For high-surface PRs (auth / Lambda / concurrent-write / public unauthenticated endpoints / scope-grew), the skill auto-dispatches the specialist trio in parallel.
+Output: 5-standards report. For high-surface PRs (auth / Lambda / concurrent-write / public unauthenticated endpoints / scope-grew), the skill automatically runs three additional review lenses (silent failures, security semantics, test-coverage semantics) inline against the same diff.
 
 ### 2. Review another agent's PR completion summary
 

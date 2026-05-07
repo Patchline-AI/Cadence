@@ -10,7 +10,7 @@ The full text of Contributor Covenant 2.1 is the binding document. Read it: [con
 
 ## Reporting
 
-Open a [GitHub issue](https://github.com/Patchline-AI/Cadence/issues/new/choose) (mark it private if your repo permissions allow) or DM a maintainer through the repository's contact channel. Reports are handled confidentially.
+Open a [GitHub issue](https://github.com/Patchline-AI/Cadence/issues/new/choose) for public-discussable conduct concerns. For sensitive matters, contact a repository maintainer through their public profile (e.g. GitHub-listed contact). Cadence does not currently operate a private moderation mailbox.
 
 ## Scope
 

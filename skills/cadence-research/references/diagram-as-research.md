@@ -1,12 +1,8 @@
 # Diagram-as-Research
 
-_Derived from Julie Yaunches' "Accelerated Engineering" talk (NVIDIA, AI Agents 2026, May 5 2026)._
+> **Diagramming is a thinking tool — not just documentation.**
 
-> **"Diagramming is a thinking tool — not just documentation."** (slide 14:36:07)
->
-> **"One prompt. Codebase → diagram → shared understanding."** (slide 14:36:41)
-
-The slowest part of any non-trivial change is loading the right mental model. Yaunches uses a personal mermaid-to-png skill to do this many times per session — the agent reads the codebase, generates a mermaid diagram, renders to PNG, opens it, then iteratively zooms via prompts like "let's dig into how the gateway works with OpenShell."
+The slowest part of any non-trivial change is loading the right mental model. The pattern: the agent reads the codebase, generates a mermaid diagram, renders to PNG when needed, then iteratively zooms via prompts like "now dig into how the gateway talks to the upstream provider."
 
 The point is **interrogation, not documentation**. The diagram is throwaway. The mental model that survives is the value.
 
@@ -41,7 +37,7 @@ Skip for:
 2. **Wait, look, then zoom in.** Pick the box that's least clear. Example follow-up:
    > "Now zoom into the supervisor — show me how `process_user_query` decides whether to call the analysis agent vs. the metadata agent vs. the metrics agent. Same render pattern."
 
-3. **Surface specific facts you didn't know before continuing.** Yaunches' gateway example surfaced four facts via diagram:
+3. **Surface specific facts you didn't know before continuing.** A canonical example — a gateway that fronts a model-inference call — typically surfaces facts like:
    - Agent calls `inference.local` — never sees credentials
    - Gateway injects credentials and forwards to provider
    - Policy engine blocks all unallowed egress
@@ -75,7 +71,13 @@ When you're trying to load a system into context, the diagrams that pay off most
 
 ## What NOT to do
 
-- **Don't use diagram-as-research as documentation.** Yaunches was explicit: "diagramming is a thinking tool — not just documentation." Documentation lives in the repo and ages out. The diagram you draw before a task is a throwaway thinking tool.
+- **Don't use diagram-as-research as documentation.** Documentation lives in the repo and ages out. The diagram you draw before a task is a throwaway thinking tool.
 - **Don't draw the whole codebase.** Always start specific. "How does X talk to Y?" not "Draw the whole system." (For whole-codebase mapping, use a dedicated codebase-mapping tool.)
-- **Don't skip the iteration step.** The first diagram is rarely right. Yaunches: "you're kind of like interrogating the diagram until you see what's happening."
+- **Don't skip the iteration step.** The first diagram is rarely right — interrogate it until what's actually happening surfaces.
 - **Don't draw a diagram that just rephrases the file structure.** If the diagram is `Service A → Service B → Service C` with no constraints, hidden invariants, or trust boundaries surfaced, it's not adding context. Push the agent to surface what's interesting: "what credentials cross which boundaries", "what's the failure mode when X is unreachable", "where does the invariant break if a step retries".
+
+---
+
+## Origin
+
+The diagram-as-research practice was anchored by talks at AI Agents 2026 (May 2026). The pattern is the conference's contribution; the lens prompts and Cadence wrapping are this plugin's.

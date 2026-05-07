@@ -1,6 +1,6 @@
 ---
 name: cadence-research
-description: The "Research" pillar of the Cadence quality model — the per-task practice that runs BEFORE you touch code on a non-trivial subsystem. Implements the four moves (map the system, inspect the history, find the seams, produce an artifact) plus the diagram-as-research thinking pattern from Yaunches' AI Agents 2026 talk. Use whenever the user says "research before I touch <area>", "diagram-as-research", "map this subsystem before changing it", "produce a risk memo for <area>", or you're about to start work on a non-trivial change. Skip for one-line bug fixes where the seam is already obvious.
+description: The "Research" pillar of the Cadence quality model — the per-task practice that runs BEFORE you touch code on a non-trivial subsystem. Implements the four moves (map the system, inspect the history, find the seams, produce an artifact) plus the diagram-as-research thinking pattern, anchored from talks at AI Agents 2026. Use whenever the user says "research before I touch <area>", "diagram-as-research", "map this subsystem before changing it", "produce a risk memo for <area>", or you're about to start work on a non-trivial change. Skip for one-line bug fixes where the seam is already obvious.
 ---
 
 # Cadence Research
