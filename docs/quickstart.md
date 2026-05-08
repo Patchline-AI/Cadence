@@ -69,15 +69,23 @@ Claude announces "I'm using the cadence-pr-review skill" and produces a report a
 
 ## Verify against the fixture
 
-The fixture lives at `skills/cadence-pr-review/evals/sample-pr/` — a directory with a deliberately-bad `route.ts` and an inadequate `route.test.ts`.
+The fixture is a deliberately-bad `route.ts` + an inadequate `route.test.ts` shipped with the plugin under `skills/cadence-pr-review/evals/sample-pr/`.
 
-In Claude Code:
+If you installed via `/plugin install`, the fixture is in the cache. Find the path first:
 
 ```text
-Use cadence-pr-review on the files in skills/cadence-pr-review/evals/sample-pr/ against skills/cadence-pr-review/evals/expected-findings.md.
+/plugin info cadence
 ```
 
-Report should flag all 5 findings from `evals/expected-findings.md` (3 BLOCKERS, 2 FLAGS). If it misses any: the skill needs tightening.
+That prints something like `~/.claude/plugins/cache/patchline-ai/cadence/0.1.0-alpha.4/`. Then in Claude Code:
+
+```text
+Use cadence-pr-review on <install-path>/skills/cadence-pr-review/evals/sample-pr/ against <install-path>/skills/cadence-pr-review/evals/expected-findings.md.
+```
+
+If you cloned Cadence directly, `cd` into the repo and the relative path `skills/cadence-pr-review/evals/sample-pr/` works as-is.
+
+Report should flag all 5 findings from `evals/expected-findings.md` (3 BLOCKERS, 2 FLAGS). If it misses any: tighten the skill, or check that you're running on a frontier model (calibrated against Claude Opus 4.6+).
 
 ## Four workflows
 
