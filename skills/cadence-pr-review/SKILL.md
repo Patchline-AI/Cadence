@@ -11,7 +11,7 @@ You are running pre-PR review against the current branch's diff. Your job is to 
 
 ## First-run calibration (once per repo)
 
-The reference docs use generic placeholders (`your secret-handling module`, `your test-suite-map`, etc.). If `.cadence/profile.md` exists, read it and substitute its values — it tells you the base branch, the hot tables, the high-surface paths that make Step 6 mandatory, and where services/secrets/tests live. If it doesn't exist, run the calibration in `reference/calibration.md` first (~2 min) so this review is sharp instead of generic.
+The reference docs use generic placeholders (`your secret-handling module`, `your test-suite-map`, etc.). If `.cadence/profile.md` exists in the repo under review, read it and substitute its values — it tells you the base branch, the hot tables, the high-surface paths that make Step 6 mandatory, and where services/secrets/tests live. If it doesn't exist, run the calibration in `reference/calibration.md` (at the Cadence plugin/repo root — one level above the `skills/` dir; symlink-install users will find it at the cloned Cadence repo root) first (~2 min) so this review is sharp instead of generic.
 
 ## Source of authority
 
@@ -33,7 +33,7 @@ echo "Reviewing against origin/$BASE"
 git fetch origin "$BASE"
 ```
 
-Throughout this skill, wherever you see `origin/main`, substitute `origin/$BASE`. The reference docs show `main` only as the common default.
+Throughout this skill and its references the base is written `origin/$BASE` (resolved above). `main` appears only as the fallback when resolution fails — never as a hardcoded assumption.
 
 ## Step 0.5 — Triage before you review (large diffs)
 
@@ -77,6 +77,22 @@ If you're being asked to review a PR after another agent (Codex, etc.) finished 
 4. If delta is small and on-scope, re-review only the changed files with the 5 standards.
 
 **Reference case** (May 2026 field test): an agent's summary said "addressed the only architecture flag." Reality: 7 new commits, +2,500 lines, an unrelated feature PR merged in (admin-auth surface entered scope). Skipping the scope-change check would have rubber-stamped 4 hidden BLOCKERS.
+
+## What runs, and in what order (core vs. conditional)
+
+Cadence has grown coverage; keep it crisp by knowing what's always-on vs. trigger-gated. **Depth on what's triggered beats breadth on everything** — do not run all passes shallowly on a trivial diff.
+
+**Core — every PR, always:**
+
+1. Step -1 (resolve base) · Step 0.5 (triage large diffs)
+2. The 5 standards (drift, conflict, security, architecture, tests)
+3. The always-on Failure-Semantics & Observability check
+
+**Conditional — fire only on their trigger:**
+
+- **Step 0 scope-change drill** — only when reviewing another agent's completion summary.
+- **Step 6 trio** (silent failures / security / test semantics) — only for high-surface PRs (auth, Lambda, concurrent-write, public unauthenticated endpoint, or scope-grew).
+- **Extended lenses 4–7** (migration / idempotency / dependency / rollout) — each only when its diff-content trigger matches.
 
 ## The five standards — run all five, in order
 

@@ -47,7 +47,7 @@ Run the three lenses if **any** of these conditions hold:
 4. **Diff includes any of these patterns:**
 
    ```bash
-   git diff origin/main...HEAD | grep -E '\.catch\(\(\) => null\)|\} catch \{ /\* (swallow|ignore)|catch \(.*HTTPError\)|except HTTPError'
+   git diff origin/$BASE...HEAD | grep -E '\.catch\(\(\) => null\)|\} catch \{ /\* (swallow|ignore)|catch \(.*HTTPError\)|except HTTPError'
    ```
 
 If any of the above match, run the three lenses. Otherwise the 5 standards are sufficient.
@@ -132,7 +132,7 @@ Severity: money or user-visible duplication = BLOCKER; internal dedup gap = FLAG
 **Trigger:** a lockfile or package manifest changed in the diff.
 
 ```bash
-git diff origin/main...HEAD -- '*lock*' 'package.json' 'requirements*.txt' 'go.mod' 'Cargo.toml' 'pyproject.toml'
+git diff origin/$BASE...HEAD -- '*lock*' 'package.json' 'requirements*.txt' 'go.mod' 'Cargo.toml' 'pyproject.toml'
 ```
 
 Hunt for:

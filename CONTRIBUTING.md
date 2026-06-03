@@ -26,7 +26,7 @@ Thanks for considering a contribution.
 
 ## Eval discipline
 
-Every new pattern in a standard's reference doc should come with a fixture file under `evals/sample-pr/` (or a new `evals/<scenario>/` directory) and an entry in `expected-findings.md`. Patterns without evals are not enforceable.
+Every new pattern in a standard's reference doc (or a new lens) should come with a fixture in its own `evals/<scenario>/` directory and a matching `expected-findings-<scenario>.md` answer key, wired into `evals/RUN-EVAL.md`. Patterns without evals are not enforceable. When you add a fixture, run it blind against a frontier model and confirm the answer key is matched before opening the PR — and add a clean/PASS counterpart if the pattern risks false positives.
 
 ## Style
 

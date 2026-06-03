@@ -85,11 +85,12 @@ The lenses fire only on high-surface PR detection. Trigger conditions are listed
 
 To force the lenses on a PR you think should match: explicitly invoke `Use cadence-pr-review and run the three inline review lenses`.
 
-### "Eval fixture's 5 findings aren't all flagged"
+### "Eval fixture findings aren't all flagged"
 
-The 5 findings in `evals/expected-findings.md` are calibrated. If your install misses any:
+The plugin ships **five** eval fixtures, each with its own answer key (see `evals/RUN-EVAL.md`):
+`sample-pr/` (5 standards + failure-semantics), `lambda-pr/` and `auth-pr/` and `rate-limit-pr/` (the trio lenses), and `clean-pr/` (must produce `VERDICT: PASS` — false-positive calibration). If your install misses findings or invents them on `clean-pr/`:
 
-1. Check the model in use — Cadence is calibrated against frontier models (Claude Opus 4.6 or newer recommended). Older or smaller models may miss findings.
+1. Check the model in use — Cadence is calibrated against frontier models (Claude Opus 4.6 or newer recommended). Older or smaller models may miss findings; the trio fixtures (`lambda-pr`/`auth-pr`/`rate-limit-pr`) degrade first.
 2. Check the prompt — `Use cadence-pr-review on <branch-or-fixture>` should be sufficient.
 3. Open an issue with the report you got and the model used.
 

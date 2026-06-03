@@ -56,6 +56,8 @@ Lens 2 — Security: JWT aud/client_id, single-secret blast radius, identity-has
 Lens 3 — Test coverage semantics: layered-but-not-composed, public endpoint magic-byte sniff untested, missing regression tests
 ```
 
+> Current versions also run an always-on Failure-Semantics & Observability check on every PR, and extended lenses 4–7 (migration / idempotency / dependency / rollout) on their diff triggers. This worked example predates those; the trio is the part that caught the 4 blockers below.
+
 ## The combined verdict
 
 | Severity | Finding | Source |

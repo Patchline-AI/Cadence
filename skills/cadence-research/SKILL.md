@@ -12,7 +12,7 @@ description: The "Research" pillar of the Cadence quality model — the per-task
 
 ## First-run calibration (once per repo)
 
-If `.cadence/profile.md` exists, read it — it tells you where services/stores/hooks live (Move 1) and where the drift log / incident memory is (Move 2), so the moves target the right paths. If it doesn't exist, the calibration in `reference/calibration.md` (~2 min) makes every move sharper. Not blocking — research still runs without it.
+If `.cadence/profile.md` exists in the repo, read it — it tells you where services/stores/hooks live (Move 1) and where the drift log / incident memory is (Move 2), so the moves target the right paths. If it doesn't exist, the calibration in `reference/calibration.md` (at the Cadence plugin/repo root, ~2 min) makes every move sharper. Not blocking — research still runs without it.
 
 ## When to run
 

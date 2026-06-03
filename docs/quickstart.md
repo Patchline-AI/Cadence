@@ -65,7 +65,7 @@ In any branch with a real diff:
 Use cadence-pr-review on this branch.
 ```
 
-Claude announces "I'm using the cadence-pr-review skill" and produces a report against `origin/main...HEAD` with the 5 Agent Review Standards.
+Claude announces "I'm using the cadence-pr-review skill", resolves the PR's base branch, and produces a report against `origin/$BASE...HEAD` (the resolved base) with the 5 Agent Review Standards.
 
 ## Verify against the fixture
 

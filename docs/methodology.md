@@ -80,7 +80,14 @@ Cadence ships **three additional review lenses** that run inline as part of the 
 - **Lens 2 — Security.** Catches JWT `aud`/`client_id` validation gaps, single-secret blast radius, identity-hash bypass, body-buffer DoS, lock-takeover clock-skew, info disclosure.
 - **Lens 3 — Test coverage semantics.** Catches layered-but-not-composed integration tests, public endpoint magic-byte sniffs that exist but are tested only via vacuous integration runners, regression tests missing for claimed fixes.
 
-**The receipts:** in the field test that produced this plugin, the 5 standards alone returned 0 blockers on a real PR. The three lenses caught **4 production traps** the standards-based pass would have shipped. See [`docs/examples/reviewing-an-agent-pr.md`](./examples/reviewing-an-agent-pr.md) for the worked example.
+Two more pieces sit alongside the trio:
+
+- **An always-on Failure-Semantics & Observability check** runs on *every* PR (not just high-surface ones) — contextless 500s, swallowed exceptions, and partial-success-200s. It's the lightweight floor that gives observability findings an explicit home instead of mis-filing them under Architectural Alignment.
+- **Extended lenses 4–7** (data-migration/backward-compat, idempotency/retry-safety, dependency/supply-chain, rollout/reversibility) fire on their own diff-content triggers. They cover production-risk classes the trio doesn't.
+
+See `skills/cadence-pr-review/references/failure-semantics.md` and the "Extended lenses" section of `specialist-trio.md`. The crisp model is still **5 standards (patterns) + lenses (semantics)** — the always-on check and extended lenses are gated additions, not new always-run peers.
+
+**The receipts:** in the field test that produced this plugin, the 5 standards alone returned 0 blockers on a real PR. The three lenses caught **4 production traps** the standards-based pass would have shipped. See [`docs/examples/reviewing-an-agent-pr.md`](./examples/reviewing-an-agent-pr.md) for the worked example. The plugin also ships five eval fixtures (one per the standards, three for the trio lenses, and one clean/PASS fixture for false-positive calibration) so these claims are reproducible, not just asserted.
 
 ## When another agent hands you a PR completion summary
 

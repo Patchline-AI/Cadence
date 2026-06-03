@@ -2,7 +2,7 @@
 
 > "Does this overlap with, contradict, or duplicate another open PR?"
 
-_Commands below show `origin/main` as the common default. Substitute `origin/$BASE` — the PR's actual base, resolved in the SKILL's Step -1. Never assume `main`._
+_Commands use `origin/$BASE` — the PR's base branch, resolved in the SKILL's Step -1 (defaults to `main` only if unresolved). Never hardcode the base._
 
 ## Quick command
 
@@ -15,9 +15,9 @@ Then for each open PR that looks adjacent:
 
 ```bash
 gh pr view <number> --json files | jq -r '.files[].path' | sort
-git diff origin/main...HEAD --name-only | sort
+git diff origin/$BASE...HEAD --name-only | sort
 comm -12 <(gh pr view <number> --json files | jq -r '.files[].path' | sort) \
-        <(git diff origin/main...HEAD --name-only | sort)
+        <(git diff origin/$BASE...HEAD --name-only | sort)
 ```
 
 If `comm` returns shared paths: real overlap. **FLAG** if independent fixes can coexist, **BLOCKER** if the changes contradict.

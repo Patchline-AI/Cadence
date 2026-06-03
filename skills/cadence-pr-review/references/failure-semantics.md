@@ -4,7 +4,7 @@
 
 This runs on **every** PR, not just high-surface ones. It is the lightweight, always-on version of Lens 1 (Silent failures). The deep Lens 1 pass still runs in Step 6 for high-surface PRs; this is the floor for everything else.
 
-> Commands below show `origin/main` as the common default. Substitute `origin/$BASE` — the PR's actual base, resolved in the SKILL's Step -1. Never assume `main`.
+> Commands use `origin/$BASE` — the PR's base branch, resolved in the SKILL's Step -1 (defaults to `main` only if unresolved). Never hardcode the base.
 
 ## Why this isn't folded into one of the 5 standards
 
@@ -19,14 +19,14 @@ The 5 standards own drift, conflict, security patterns, architecture conventions
 - A bare `console.error(...)` followed by `return ... 500` is a BLOCKER. The next incident is grep-only.
 - Search:
   ```bash
-  git diff origin/main...HEAD | grep -E 'status: 500|statusCode.*500|HTTPStatus\.(INTERNAL|500)' -B 8 | grep -iE 'console\.(error|log)|print\(' 
+  git diff origin/$BASE...HEAD | grep -E 'status: 500|statusCode.*500|HTTPStatus\.(INTERNAL|500)' -B 8 | grep -iE 'console\.(error|log)|print\(' 
   ```
 
 ### Swallowed exceptions on data paths
 - `catch {}`, `.catch(() => null)`, `.catch(() => {})`, `except Exception: pass` on a write/mutation path that then continues as if the call succeeded is a BLOCKER — it corrupts downstream state silently.
 - Search:
   ```bash
-  git diff origin/main...HEAD | grep -E '\.catch\(\(\) => (null|\{\}|undefined)\)|catch \{\s*\}|except[^:]*:\s*pass'
+  git diff origin/$BASE...HEAD | grep -E '\.catch\(\(\) => (null|\{\}|undefined)\)|catch \{\s*\}|except[^:]*:\s*pass'
   ```
 
 ### Partial success returning 200

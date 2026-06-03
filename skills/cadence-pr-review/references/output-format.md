@@ -9,7 +9,7 @@ The skill always produces a single markdown report. The structure below is non-n
 
 **Diff summary:** N files changed (+X / -Y)
 **Touched areas:** [billing | catalog | projects | upload | chat | aws-data-path | sentry | tests | docs | infra]
-**Commits:** N commits ahead of origin/main
+**Commits:** N commits ahead of origin/$BASE
 
 ## Blockers (must fix before merge)
 

@@ -12,7 +12,7 @@ description: The "Sweeps" pillar of the Cadence quality model — recurring clea
 
 ## First-run calibration (once per repo)
 
-If `.cadence/profile.md` exists, read it — it supplies the test-suite map (orphan/enrollment sweeps) and the hot-tables list (concurrency recurrence checks). If it doesn't exist, run `reference/calibration.md` first. The ledger lives at `.cadence/ratchet-ledger.md` — create it on the first sweep if absent.
+If `.cadence/profile.md` exists in the repo, read it — it supplies the test-suite map (orphan/enrollment sweeps) and the hot-tables list (concurrency recurrence checks). If it doesn't exist, run `reference/calibration.md` (at the Cadence plugin/repo root) first. The ledger lives at `.cadence/ratchet-ledger.md` — create it on the first sweep if absent.
 
 ## What sweeps catch that gates can't
 
