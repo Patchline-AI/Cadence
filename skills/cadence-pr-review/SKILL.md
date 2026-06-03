@@ -9,6 +9,10 @@ You are running pre-PR review against the current branch's diff. Your job is to 
 
 **Announce at start:** "I'm using the cadence-pr-review skill."
 
+## First-run calibration (once per repo)
+
+The reference docs use generic placeholders (`your secret-handling module`, `your test-suite-map`, etc.). If `.cadence/profile.md` exists, read it and substitute its values — it tells you the base branch, the hot tables, the high-surface paths that make Step 6 mandatory, and where services/secrets/tests live. If it doesn't exist, run the calibration in `reference/calibration.md` first (~2 min) so this review is sharp instead of generic.
+
 ## Source of authority
 
 The five standards and their concrete pattern checklists are documented in:
@@ -16,19 +20,45 @@ The five standards and their concrete pattern checklists are documented in:
 
 Cross-reference each standard's reference doc. Don't skip a standard because the diff "looks small."
 
+## Step -1 — Resolve the base branch FIRST (do not assume `main`)
+
+Every command in this skill and its references compares the branch against a base. **Resolve the base once, up front. Never hardcode `origin/main`** — many repos use `master`, `develop`, or a per-PR base, and a wrong base makes the entire review silently compare against the wrong tree without erroring.
+
+```bash
+# Prefer the PR's declared base; fall back to the remote default; last resort 'main'.
+BASE=$(gh pr view --json baseRefName -q .baseRefName 2>/dev/null \
+  || git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' \
+  || echo main)
+echo "Reviewing against origin/$BASE"
+git fetch origin "$BASE"
+```
+
+Throughout this skill, wherever you see `origin/main`, substitute `origin/$BASE`. The reference docs show `main` only as the common default.
+
+## Step 0.5 — Triage before you review (large diffs)
+
+At agentic velocity, diffs are often huge. Before deep-reviewing:
+
+```bash
+git diff origin/$BASE...HEAD --stat | sort -t'|' -k2 -rn   # biggest churn first
+```
+
+1. **Rank files by risk, not by size.** Review in this order: auth / token-verification → serverless/Lambda → concurrent-write paths → public unauthenticated endpoints → payment/secret handling → everything else.
+2. **Skip generated/vendored artifacts for deep review** (lockfiles, `*.snap`, generated clients, `dist/`, minified bundles). Note their presence; don't line-review them. Still scope-check them in Standard 1 (a generated file moving on the base is real drift).
+3. **If the diff exceeds your working budget**, review the high-risk files in full and explicitly mark the remainder `NOTE: not deep-reviewed — <reason>` in the report. Never silently skip; an unreviewed file is a stated gap, not an omission.
+
 ## Inputs
 
-Read these BEFORE running any standard:
+Read these BEFORE running any standard (with `$BASE` resolved in Step -1):
 
 ```bash
 # The diff under review
-git fetch origin main
-git diff origin/main...HEAD --stat       # touched-files summary
-git diff origin/main...HEAD              # full diff for inspection
+git diff origin/$BASE...HEAD --stat       # touched-files summary
+git diff origin/$BASE...HEAD              # full diff for inspection
 
 # Branch + commit context
-git log --oneline origin/main..HEAD       # commits on this branch
-git rev-parse --abbrev-ref HEAD          # branch name
+git log --oneline origin/$BASE..HEAD      # commits on this branch
+git rev-parse --abbrev-ref HEAD           # branch name
 ```
 
 If `gh` is available:
@@ -57,11 +87,10 @@ See `references/codebase-drift.md` for the full checklist.
 
 Quick check:
 ```bash
-git fetch origin main
-git log --oneline HEAD..origin/main -- $(git diff origin/main...HEAD --name-only)
+git log --oneline HEAD..origin/$BASE -- $(git diff origin/$BASE...HEAD --name-only)
 ```
 
-If any output: the branch is patching files that moved on main. Flag as BLOCKER.
+If any output: the branch is patching files that moved on the base. Flag as BLOCKER.
 
 ### 2. Conflicting PR Detection
 "Does this overlap with, contradict, or duplicate another open PR?"
@@ -70,7 +99,7 @@ See `references/conflicting-prs.md`.
 
 Quick check:
 ```bash
-gh pr list --state open --search "$(git diff origin/main...HEAD --name-only | head -3)"
+gh pr list --state open --search "$(git diff origin/$BASE...HEAD --name-only | head -3)"
 ```
 
 Common overlap risks: serverless-function config blocks, agent-orchestration config, database schema for hot tables, shared service-module singletons.
@@ -112,6 +141,21 @@ Hard rules:
 - Bug fixes touching user-facing behavior or data writes MUST include a regression test that would have caught the bug.
 - Tests should exercise the failure mode, not just the happy path.
 
+## Always-on check — Failure Semantics & Observability
+
+The 5 standards check drift, conflict, security patterns, architecture conventions, and test enrollment. None of them owns **what happens when code fails**. That gap is why observability findings used to get shoehorned into "Architectural Alignment." This is the lightweight, always-run version of Lens 1 (the high-surface deep version still runs in Step 6). Run it on **every** PR, not just high-surface ones.
+
+See `references/failure-semantics.md` for the full checklist.
+
+Hard rules (BLOCKER on violation):
+- **No contextless 500s.** A `catch` that returns a generic 500 MUST capture to your error tracker (`Sentry.captureException` or equivalent) AND attach a correlation/error ID to the response. A bare `console.error(...)` + `500` leaves the next incident grep-only — BLOCKER.
+- **No swallowed exceptions on data paths.** `catch {}`, `.catch(() => null)`, `.catch(() => {})` on a write/mutation path that lets execution continue as if it succeeded is a BLOCKER (corrupts downstream state silently).
+- **Partial success must not return 200.** Batch/multi-item operations that skip or fail items must report per-item outcomes, not collapse to a blanket `{ ok: true }`.
+
+Soft rules (FLAG):
+- Fail-closed controls (rate limit, auth) should be **distinguishable in the response** from fail-by-design, so an outage doesn't look like normal throttling.
+- New `console.log`/`print` on hot paths without a structured logger — FLAG.
+
 ## Step 6 — Specialist Trio (high-surface PRs)
 
 The 5 standards check **patterns**. They miss **semantics**. For high-surface PRs, run three additional review passes against the same diff, each with a different lens. These run as inline reviews in the same skill — no external subagents required.
@@ -143,6 +187,18 @@ Audit trust boundaries: JWT `aud` / `client_id` validation, `email_verified` enf
 
 **Lens 3 — Test coverage semantics.**
 Audit test-vs-implementation composition: each layer mocked individually but never composed end-to-end, public-endpoint pre-auth gates added but only tested via integration runners that fail at an earlier gate and never reach the new one, regression tests missing for the failure modes the PR claims to fix, mismatched-field branches uncovered (e.g. `body.userId !== resource.userId` returning 409 but the path has no test), expired-credential branches uncovered. Report findings against the diff.
+
+### Extended lenses (run when the diff matches their trigger)
+
+The trio (silent failures / security / test semantics) is the core. Four more lenses catch production-risk classes the trio doesn't. Run a lens when its trigger fires — they're cheap. Full checklists in `references/specialist-trio.md` ("Extended lenses").
+
+**Lens 4 — Data migration & backward compatibility.** Trigger: diff touches a schema, migration, enum, serialized contract, or any public API response shape. Hunt for: non-nullable column/field added without a default or backfill, enum value removed/renamed, response field removed or retyped (breaks existing clients), migration that isn't reversible, read/write deploy-ordering hazards (new code reads a column the migration hasn't added yet).
+
+**Lens 5 — Idempotency & retry safety.** Trigger: mutating endpoint, webhook handler, queue consumer, or payment path. Hunt for: no idempotency key on a retryable mutation, webhook with no replay/dedup guard, at-least-once delivery treated as exactly-once, non-idempotent side effects (double-charge, double-send) on retry.
+
+**Lens 6 — Dependency & supply chain.** Trigger: lockfile or manifest changed. Hunt for: new direct dependency (name it, note why it entered), unpinned/`*`/`latest` ranges, a large transitive tree from one small package, a dependency duplicating something already vendored. (Deep CVE scanning stays a sweep; this is the gate-time "what entered and why" check.)
+
+**Lens 7 — Rollout & reversibility.** Trigger: risky behavior change, data backfill, or anything hard to undo. Hunt for: no feature flag / kill switch on a risky path, no rollback plan for a destructive migration, change that can't be dark-launched, all-or-nothing cutover where a staged one was possible.
 
 ### Severity calibration
 
@@ -186,11 +242,13 @@ Produce a single markdown report with this structure:
 
 Severity rule: BLOCKER if violation of a hard rule from any standard, FLAG if pattern divergence with credible business reason, NOTE if stylistic.
 
+**Order blockers by blast radius** (most-likely-to-ship-and-hurt first), not by standard number — the human needs a fix order, not a checklist order. When you assert a finding, cite the exact `file:line` and a falsifiable reason; a finding you can't anchor to a line is a NOTE, not a BLOCKER.
+
 ## Acceptance: against the sample-pr fixture
 
 Run yourself against `evals/sample-pr/` and verify your report flags ALL five of:
 1. Concurrency guard missing on a database write that uses a full-row replace pattern (Standard 3, BLOCKER)
-2. Generic 500 with no Sentry capture and no error ID (Standard 4, BLOCKER)
+2. Generic 500 with no Sentry capture and no error ID (Failure Semantics & Observability, BLOCKER)
 3. Item-size risk — large nested objects embedded per record without a size cap (Standard 4, FLAG)
 4. Missing regression test for the stale-write race the fix claims to address (Standard 5, BLOCKER)
 5. Owned-field `SET` pattern not used — write replaces broader fields than necessary (Standard 4, FLAG)

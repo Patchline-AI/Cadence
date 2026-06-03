@@ -77,7 +77,7 @@ If you installed via `/plugin install`, the fixture is in the cache. Find the pa
 /plugin info cadence
 ```
 
-That prints something like `~/.claude/plugins/cache/patchline-ai/cadence/0.1.0-alpha.4/`. Then in Claude Code:
+That prints something like `~/.claude/plugins/cache/patchline-ai/cadence/0.2.0-alpha.1/`. Then in Claude Code:
 
 ```text
 Use cadence-pr-review on <install-path>/skills/cadence-pr-review/evals/sample-pr/ against <install-path>/skills/cadence-pr-review/evals/expected-findings.md.

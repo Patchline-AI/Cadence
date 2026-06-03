@@ -98,6 +98,63 @@ The 4 BLOCKERS the lenses caught that the 5 standards didn't:
 
 The 5 standards on their own returned **"0 BLOCKERS, 1 FLAG"** for this PR. With the lenses: **4 BLOCKERS, 16 FLAGS, 7 NOTES**. Without the lenses, this PR would have shipped with all 4 blockers active in production.
 
+## Extended lenses (Lenses 4–7)
+
+The trio above is the core for high-surface PRs. These four extra lenses cover production-risk classes the trio doesn't. Each fires on a **diff-content trigger** rather than on the high-surface classification — run a lens when its trigger matches, regardless of whether the trio ran. They are cheap (one focused pass each) and catch outage classes that pattern checks and the trio both miss.
+
+### Lens 4 — Data migration & backward compatibility
+
+**Trigger:** diff touches a DB schema/migration file, an enum, a serialized contract (protobuf/Avro/JSON schema), or a public API response shape.
+
+Hunt for:
+- Non-nullable column / required field added with no default and no backfill step → existing rows / in-flight writes break.
+- Enum value removed or renamed → old persisted values fail to deserialize.
+- Response field removed, renamed, or retyped → existing clients break (this is a contract break even if no test fails).
+- Migration with no reverse / down path → can't roll back.
+- **Deploy-ordering hazard:** new code reads/writes a column the migration adds, but the migration and the code ship in an order where one runs without the other (expand/contract not followed).
+
+Severity: contract break to external clients or an irreversible migration = BLOCKER; internal-only with a safe expand/contract = FLAG.
+
+### Lens 5 — Idempotency & retry safety
+
+**Trigger:** mutating endpoint, webhook handler, queue/stream consumer, payment path, or anything invoked by an at-least-once delivery system.
+
+Hunt for:
+- Retryable mutation with no idempotency key → duplicate side effects on retry.
+- Webhook handler with no replay/dedup guard (signature verified but event ID not recorded).
+- At-least-once delivery treated as exactly-once.
+- Non-idempotent side effects on the retry path: double charge, double email/notification, double inventory decrement.
+
+Severity: money or user-visible duplication = BLOCKER; internal dedup gap = FLAG.
+
+### Lens 6 — Dependency & supply chain
+
+**Trigger:** a lockfile or package manifest changed in the diff.
+
+```bash
+git diff origin/main...HEAD -- '*lock*' 'package.json' 'requirements*.txt' 'go.mod' 'Cargo.toml' 'pyproject.toml'
+```
+
+Hunt for:
+- New **direct** dependency — name it and state why it entered. An unexplained new dep is a FLAG until justified.
+- Unpinned / `*` / `latest` / overly-wide ranges.
+- A large transitive tree pulled in by one small package (audit the blast radius).
+- A new dependency that duplicates something already vendored / already a dep.
+
+(Deep CVE / license scanning stays in the sweep. This is the gate-time "what entered the tree and why" check — cheap and high-signal.)
+
+### Lens 7 — Rollout & reversibility
+
+**Trigger:** risky behavior change, data backfill, destructive operation, or anything hard to undo.
+
+Hunt for:
+- Risky path with no feature flag / kill switch → can't disable without a deploy.
+- Destructive migration / backfill with no documented rollback.
+- Change that can't be dark-launched or staged (all-or-nothing cutover where a percentage rollout was possible).
+- No monitoring/alert wired for the new failure mode the change introduces.
+
+Severity: irreversible + no flag on a risky path = BLOCKER; missing flag where staged rollout was feasible = FLAG.
+
 ## Operating rule
 
-**For a high-surface PR, the 5 standards are the gate. The three inline lenses are the gate-completion step. Don't ship without both.**
+**For a high-surface PR, the 5 standards are the gate. The three inline lenses are the gate-completion step. The extended lenses (4–7) fire on their diff triggers. Don't ship without the set that applies.**

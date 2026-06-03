@@ -2,6 +2,8 @@
 
 > "Does this overlap with, contradict, or duplicate another open PR?"
 
+_Commands below show `origin/main` as the common default. Substitute `origin/$BASE` — the PR's actual base, resolved in the SKILL's Step -1. Never assume `main`._
+
 ## Quick command
 
 ```bash

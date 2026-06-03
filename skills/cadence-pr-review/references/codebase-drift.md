@@ -2,6 +2,8 @@
 
 > "Is the PR patching code that has moved or been restructured upstream while the branch was open?"
 
+_Commands below show `origin/main` as the common default. Substitute `origin/$BASE` — the PR's actual base, resolved in the SKILL's Step -1. Never assume `main`._
+
 ## Quick command
 
 ```bash

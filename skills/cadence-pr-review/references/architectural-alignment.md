@@ -2,6 +2,8 @@
 
 > "Does this move toward the target architecture or away from it?"
 
+_Commands below show `origin/main` as the common default. Substitute `origin/$BASE` — the PR's actual base, resolved in the SKILL's Step -1. Never assume `main`._
+
 ## Naming patterns (FLAG on divergence)
 
 - Service files: follow the codebase's existing service-file naming + singleton convention; deviation is a flag.
