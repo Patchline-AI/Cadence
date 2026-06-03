@@ -2,12 +2,14 @@
 
 > "Are trust boundaries respected? Are controls fail-closed?"
 
+_Commands use `origin/$BASE` — the PR's base branch, resolved in the SKILL's Step -1 (defaults to `main` only if unresolved). Never hardcode the base._
+
 ## Hard rules (BLOCKER on any violation)
 
 ### API secret handling
 - All API secret access goes through your codebase's masked-helper module.
-- Search for violations: `git diff origin/main...HEAD | grep -E 'console\.(log|error|warn).*(sk_(live|test)|api_key|access_key)'`
-- Search for violations: `git diff origin/main...HEAD | grep -E 'process\.env\.[A-Z_]*SECRET[A-Z_]*' | grep -v '<your-secret-helper-module>'`
+- Search for violations: `git diff origin/$BASE...HEAD | grep -E 'console\.(log|error|warn).*(sk_(live|test)|api_key|access_key)'`
+- Search for violations: `git diff origin/$BASE...HEAD | grep -E 'process\.env\.[A-Z_]*SECRET[A-Z_]*' | grep -v '<your-secret-helper-module>'`
 - Webhook handlers must verify signatures before trusting payloads.
 
 ### DynamoDB concurrent writes
@@ -20,7 +22,7 @@
 - Reference impl: the reference implementation in your codebase that demonstrates the optimistic-concurrency pattern.
 - Search for read-modify-write of hot-list fields without guard:
   ```bash
-  git diff origin/main...HEAD | grep -E 'UpdateCommand|PutCommand' -A 20 | grep -E '<your-hot-list-fields>' -B 5
+  git diff origin/$BASE...HEAD | grep -E 'UpdateCommand|PutCommand' -A 20 | grep -E '<your-hot-list-fields>' -B 5
   ```
 
 ### AWS env-vars
@@ -54,7 +56,7 @@
 ### Sentry / debug endpoints
 - Every internal-debug endpoint guarded by the auth-guard helper for your internal endpoints (every internal-debug endpoint must be guarded or 404'd in production).
 - (reference: a public-debug-endpoint incident — every internal probe burned a Sentry quota event before the guard landed).
-- Search: `git diff origin/main...HEAD | grep -E 'export.*async.*function (GET|POST)' -A 5 | grep -v 'is_authorized_internal\|getCurrentUser\|api-auth'`
+- Search: `git diff origin/$BASE...HEAD | grep -E 'export.*async.*function (GET|POST)' -A 5 | grep -v 'is_authorized_internal\|getCurrentUser\|api-auth'`
 
 ## Soft rules (FLAG)
 

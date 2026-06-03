@@ -65,7 +65,7 @@ In any branch with a real diff:
 Use cadence-pr-review on this branch.
 ```
 
-Claude announces "I'm using the cadence-pr-review skill" and produces a report against `origin/main...HEAD` with the 5 Agent Review Standards.
+Claude announces "I'm using the cadence-pr-review skill", resolves the PR's base branch, and produces a report against `origin/$BASE...HEAD` (the resolved base) with the 5 Agent Review Standards.
 
 ## Verify against the fixture
 
@@ -77,7 +77,7 @@ If you installed via `/plugin install`, the fixture is in the cache. Find the pa
 /plugin info cadence
 ```
 
-That prints something like `~/.claude/plugins/cache/patchline-ai/cadence/0.1.0-alpha.4/`. Then in Claude Code:
+That prints something like `~/.claude/plugins/cache/patchline-ai/cadence/0.2.0-alpha.1/`. Then in Claude Code:
 
 ```text
 Use cadence-pr-review on <install-path>/skills/cadence-pr-review/evals/sample-pr/ against <install-path>/skills/cadence-pr-review/evals/expected-findings.md.
@@ -95,7 +95,7 @@ Report should flag all 5 findings from `evals/expected-findings.md` (3 BLOCKERS,
 Use cadence-pr-review.
 ```
 
-Output: 5-standards report. For high-surface PRs (auth / Lambda / concurrent-write / public unauthenticated endpoints / scope-grew), the skill automatically runs three additional review lenses (silent failures, security semantics, test-coverage semantics) inline against the same diff.
+Output: a complete report. On every PR the skill runs all 5 standards, the always-on failure-semantics check, the trio (silent failures, security, test-coverage semantics), and the extended lenses — inline against the same diff. High-surface PRs (auth / Lambda / concurrent-write / public unauthenticated endpoints / scope-grew) get maximum scrutiny, but nothing is gated off for ordinary PRs.
 
 ### 2. Review another agent's PR completion summary
 
@@ -149,5 +149,5 @@ Direct edits inside the plugin cache can be overwritten by reinstall/update. If 
 See [TROUBLESHOOTING.md](../TROUBLESHOOTING.md). Common issues:
 
 - "Skill not found after `/reload-plugins`" → confirm `.claude-plugin/plugin.json` parses (`node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json'))"`)
-- "5 standards run but lenses don't" → check the skill's "When the trio is MANDATORY" section. The three inline lenses fire only on high-surface PR detection.
+- "5 standards run but lenses don't" → the lenses always run on every PR (the trio + extended lenses); if a run skipped them, force a complete pass and confirm you're on a frontier model with full reasoning enabled.
 - "Eval fixture's 5 findings aren't all flagged" → the model harness may need tightening. Open an issue.

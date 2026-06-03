@@ -2,7 +2,7 @@
 
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Plugin-D97757)](https://docs.claude.com/en/docs/claude-code/plugins)
 [![License: MIT](https://img.shields.io/badge/License-MIT-0068FF)](./LICENSE)
-[![Version](https://img.shields.io/badge/version-0.1.0--alpha.4-00E6E2)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.0--alpha.1-00E6E2)](./CHANGELOG.md)
 
 **Quality at agentic velocity. Research, Gates, Sweeps.**
 
@@ -96,9 +96,9 @@ Each skill maps to one of the three pillars. They fire on different cadences for
 
 | Skill | Pillar | When it fires | What it does |
 |---|---|---|---|
-| **`cadence-research`** | Research | Per-task, BEFORE work | Four-move research practice (map / inspect history / find seams / produce artifact) plus diagram-as-research thinking. Use before non-trivial changes — auth surfaces, concurrent-write paths, multi-agent config. |
-| **`cadence-pr-review`** | Gates | Event-driven, AT change boundaries | Five Agent Review Standards (Codebase Drift, Conflicting PR, Security, Architectural Alignment, Test Coverage) + three additional review lenses for high-surface PRs (silent failures, security semantics, test-coverage semantics) + a scope-change drill for receiving agent completion summaries. Use before opening any PR. |
-| **`cadence-sweep`** | Sweeps | Recurring (daily / weekly / monthly / quarterly) | Drift cleanup the gates can't catch (flaky tests, dependency lag, repeated review patterns) with the sweep-to-gate ratchet — every sweep ships TWO things: cleanup PR AND a gate-upgrade PR. |
+| **`cadence-research`** | Research | Per-task, BEFORE work | Four-move research practice with an **executable command set** (map / inspect history / find seams + **blast radius** / produce artifact), a `RESEARCH.md` template, an acceptance checklist, a lite mode, and an explicit handoff to the gate, plus diagram-as-research thinking. Use before non-trivial changes — auth surfaces, concurrent-write paths, multi-agent config. |
+| **`cadence-pr-review`** | Gates | Event-driven, AT change boundaries | Five Agent Review Standards (Codebase Drift, Conflicting PR, Security, Architectural Alignment, Test Coverage) + an **always-on Failure-Semantics & Observability check** + three trio lenses (silent failures, security, test-coverage semantics) + **extended lenses 4–7** (migration/backcompat, idempotency, dependency, rollout) + a scope-change drill. **Every pass runs on every PR** — triggers only mark where to look hardest, never whether to run. Dynamic base-branch resolution; five eval fixtures incl. a clean/PASS calibration set. Use before opening any PR. |
+| **`cadence-sweep`** | Sweeps | Recurring (daily / weekly / monthly / quarterly) | Drift cleanup the gates can't catch (flaky tests, dependency lag, repeated review patterns) — now with an **executable query per sweep**, the **ratchet engine** (promote a recurring review FLAG to a hard gate rule), a **ratchet ledger** with a recurrence rule, and incremental scoping. Every sweep ships TWO things: cleanup PR AND a gate-upgrade PR. |
 
 ## The methodology
 
@@ -169,6 +169,8 @@ The skills ship with **generic patterns** that apply to most codebases. To layer
 2. Edit `<install-path>/skills/cadence-pr-review/references/<standard>.md`.
 3. Add your patterns to the relevant standard's checklist.
 4. Run `/reload-plugins` (or restart the session). The skill picks up the changes on next invocation.
+
+**Faster path — calibrate once.** Instead of editing the cache, run the first-run calibration (`reference/calibration.md`). It auto-detects your base branch, package manager, test runner, service/store/hook dirs, secret module, suite map, drift log, hot tables, and high-surface paths into a `.cadence/profile.md` **in your repo** (survives reinstalls). All three skills read it on every invocation.
 
 Direct edits inside the plugin cache can be overwritten by reinstall/update. If your patterns become team policy, fork Cadence or vendor the reference files into your own team skill.
 

@@ -2,6 +2,8 @@
 
 > "Does this move toward the target architecture or away from it?"
 
+_Commands use `origin/$BASE` — the PR's base branch, resolved in the SKILL's Step -1 (defaults to `main` only if unresolved). Never hardcode the base._
+
 ## Naming patterns (FLAG on divergence)
 
 - Service files: follow the codebase's existing service-file naming + singleton convention; deviation is a flag.
@@ -28,7 +30,7 @@ A recurring incident class locks in this convention:
 ## Brand system
 
 - Use the codebase's design-token / brand-constants module, never raw hex.
-- Search: `git diff origin/main...HEAD --unified=0 | grep -E '#[0-9a-fA-F]{6}\b' | grep -v <your-brand-module-path>`
+- Search: `git diff origin/$BASE...HEAD --unified=0 | grep -E '#[0-9a-fA-F]{6}\b' | grep -v <your-brand-module-path>`
 
 ## Catalog / asset architecture
 

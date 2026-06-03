@@ -12,7 +12,7 @@ The 5 Agent Review Standards are the deterministic, checklist-style review (drif
 - Touches public-facing rate-limited endpoints
 - Modifies legacy `} catch { /* swallow */ }` patterns or `.catch(() => null)` patterns in services
 
-For these PRs, **always run the three lenses inline after the 5 standards complete**. The lenses are three additional review passes by the same skill — no external subagents — and each looks at the same diff through a different angle.
+**Always run the three lenses inline after the 5 standards complete — on every PR, not only the cases above.** The cases above are where the lenses are most load-bearing, not a gate that decides whether they run. The lenses are three additional review passes by the same skill — no external subagents — and each looks at the same diff through a different angle. If a lens finds no relevant surface in the diff, it reports `N/A` in one line; it is never skipped.
 
 ## The three lenses
 
@@ -22,9 +22,9 @@ For these PRs, **always run the three lenses inline after the 5 standards comple
 | Lens 2 — Security | Trust-boundary issues the standards' security checklist doesn't enumerate: JWT `aud`/`client_id` validation, `email_verified` enforcement, session-cookie binding (IP/UA/sub), single-secret blast radius, identity-hash bypass via UA rotation, body-buffer DoS *before* rate-limit, lock-takeover clock-skew windows, info disclosure via response field whitelisting, TOCTOU windows on read-modify-write |
 | Lens 3 — Test coverage semantics | Coverage gaps the suite-map enrollment check doesn't see: layered-but-not-composed integration tests (each layer mocked individually, never composed end-to-end), public endpoint with magic-byte sniff added but tested only in vacuous integration runner, missing regression tests for the failure modes the PR claims to fix, expired-cookie / mismatched-userId branches uncovered |
 
-## When to dispatch (decision rule)
+## Where the lenses bite hardest (escalation, not a gate)
 
-Run the three lenses if **any** of these conditions hold:
+You run the three lenses on every PR. The conditions below mark where their findings are most load-bearing — apply maximum scrutiny and treat near-misses as BLOCKERs when **any** hold. They do NOT decide whether the lenses run.
 
 1. **Scope-grew check fires.** Compare current branch tip against the commit you originally reviewed:
 
@@ -33,7 +33,7 @@ Run the three lenses if **any** of these conditions hold:
    git diff --stat ORIG_TIP origin/<branch>
    ```
 
-   If the delta has 5+ changed files OR 500+ added lines OR commits from a different feature scope (e.g. PR #N merged in), the lenses are mandatory.
+   If the delta has 5+ changed files OR 500+ added lines OR commits from a different feature scope (e.g. PR #N merged in), treat the lenses as load-bearing — scrutinize the new surface hardest.
 
 2. **PR description mentions "absorbed", "incorporated", "merged in", "supersedes" another PR.**
 
@@ -47,10 +47,10 @@ Run the three lenses if **any** of these conditions hold:
 4. **Diff includes any of these patterns:**
 
    ```bash
-   git diff origin/main...HEAD | grep -E '\.catch\(\(\) => null\)|\} catch \{ /\* (swallow|ignore)|catch \(.*HTTPError\)|except HTTPError'
+   git diff origin/$BASE...HEAD | grep -E '\.catch\(\(\) => null\)|\} catch \{ /\* (swallow|ignore)|catch \(.*HTTPError\)|except HTTPError'
    ```
 
-If any of the above match, run the three lenses. Otherwise the 5 standards are sufficient.
+If none of the above match, you still run all three lenses — they simply report less (or `N/A`). The 5 standards are never "sufficient" on their own; the lenses always run alongside them.
 
 ## How to run the lenses inline
 
@@ -98,6 +98,63 @@ The 4 BLOCKERS the lenses caught that the 5 standards didn't:
 
 The 5 standards on their own returned **"0 BLOCKERS, 1 FLAG"** for this PR. With the lenses: **4 BLOCKERS, 16 FLAGS, 7 NOTES**. Without the lenses, this PR would have shipped with all 4 blockers active in production.
 
+## Extended lenses (Lenses 4–7)
+
+These four extra lenses cover production-risk classes the trio doesn't. **Run all four on every PR**, right after the trio. The **trigger** noted for each lens tells you where it bites — it does NOT gate whether you run it. If a lens's trigger isn't present in the diff, you run the lens, confirm there's nothing to find, and record `N/A — no <trigger> present` (one line). They are cheap (one focused pass each) and catch outage classes that pattern checks and the trio both miss.
+
+### Lens 4 — Data migration & backward compatibility
+
+**Trigger:** diff touches a DB schema/migration file, an enum, a serialized contract (protobuf/Avro/JSON schema), or a public API response shape.
+
+Hunt for:
+- Non-nullable column / required field added with no default and no backfill step → existing rows / in-flight writes break.
+- Enum value removed or renamed → old persisted values fail to deserialize.
+- Response field removed, renamed, or retyped → existing clients break (this is a contract break even if no test fails).
+- Migration with no reverse / down path → can't roll back.
+- **Deploy-ordering hazard:** new code reads/writes a column the migration adds, but the migration and the code ship in an order where one runs without the other (expand/contract not followed).
+
+Severity: contract break to external clients or an irreversible migration = BLOCKER; internal-only with a safe expand/contract = FLAG.
+
+### Lens 5 — Idempotency & retry safety
+
+**Trigger:** mutating endpoint, webhook handler, queue/stream consumer, payment path, or anything invoked by an at-least-once delivery system.
+
+Hunt for:
+- Retryable mutation with no idempotency key → duplicate side effects on retry.
+- Webhook handler with no replay/dedup guard (signature verified but event ID not recorded).
+- At-least-once delivery treated as exactly-once.
+- Non-idempotent side effects on the retry path: double charge, double email/notification, double inventory decrement.
+
+Severity: money or user-visible duplication = BLOCKER; internal dedup gap = FLAG.
+
+### Lens 6 — Dependency & supply chain
+
+**Trigger:** a lockfile or package manifest changed in the diff.
+
+```bash
+git diff origin/$BASE...HEAD -- '*lock*' 'package.json' 'requirements*.txt' 'go.mod' 'Cargo.toml' 'pyproject.toml'
+```
+
+Hunt for:
+- New **direct** dependency — name it and state why it entered. An unexplained new dep is a FLAG until justified.
+- Unpinned / `*` / `latest` / overly-wide ranges.
+- A large transitive tree pulled in by one small package (audit the blast radius).
+- A new dependency that duplicates something already vendored / already a dep.
+
+(Deep CVE / license scanning stays in the sweep. This is the gate-time "what entered the tree and why" check — cheap and high-signal.)
+
+### Lens 7 — Rollout & reversibility
+
+**Trigger:** risky behavior change, data backfill, destructive operation, or anything hard to undo.
+
+Hunt for:
+- Risky path with no feature flag / kill switch → can't disable without a deploy.
+- Destructive migration / backfill with no documented rollback.
+- Change that can't be dark-launched or staged (all-or-nothing cutover where a percentage rollout was possible).
+- No monitoring/alert wired for the new failure mode the change introduces.
+
+Severity: irreversible + no flag on a risky path = BLOCKER; missing flag where staged rollout was feasible = FLAG.
+
 ## Operating rule
 
-**For a high-surface PR, the 5 standards are the gate. The three inline lenses are the gate-completion step. Don't ship without both.**
+**On every PR: the 5 standards, then the always-on Failure-Semantics check, then the three trio lenses, then the four extended lenses — all of them, every time. The trigger lists only tell you where to look hardest. Don't ship a review that ran a subset.**

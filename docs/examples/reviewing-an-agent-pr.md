@@ -56,6 +56,8 @@ Lens 2 — Security: JWT aud/client_id, single-secret blast radius, identity-has
 Lens 3 — Test coverage semantics: layered-but-not-composed, public endpoint magic-byte sniff untested, missing regression tests
 ```
 
+> Current versions also run an always-on Failure-Semantics & Observability check on every PR, and extended lenses 4–7 (migration / idempotency / dependency / rollout) on their diff triggers. This worked example predates those; the trio is the part that caught the 4 blockers below.
+
 ## The combined verdict
 
 | Severity | Finding | Source |
@@ -76,6 +78,6 @@ The 5-standards pass alone returned **0 BLOCKERS**. The three lenses caught **4 
 
 ## The lesson
 
-The 5 standards check **patterns**. The three lenses check **semantics**. For high-surface PRs (auth / Lambda / concurrent-write / scope-grew), running the standards alone ships things. Cadence's `cadence-pr-review` skill encodes this: Step 6 runs three additional review lenses inline, mandatory when the trigger conditions fire.
+The 5 standards check **patterns**. The lenses check **semantics**. Running the standards alone ships things — so the lenses run on **every** PR, never gated off. This example is a high-surface case (auth / Lambda / concurrent-write / scope-grew), where the lenses are most load-bearing; `cadence-pr-review` Step 6 runs them inline on every review.
 
 This is the receipts. Cadence is the practice.

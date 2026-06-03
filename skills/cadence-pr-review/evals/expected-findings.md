@@ -15,7 +15,7 @@ A correctly-functioning `cadence-pr-review` invocation should flag ALL FIVE of t
 **Why:** The `PutCommand` performs a full-row replace without an `expectedUpdatedAt` ConditionExpression. Two concurrent POSTs both reading the row at time T will each compute `merged` against the stale view and the second write silently wipes the first writer's items.
 **Fix:** Replace `PutCommand` with `UpdateCommand` using `SET items = list_append(...)` + `ConditionExpression: "updatedAt = :expectedUpdatedAt"`. On `ConditionalCheckFailedException`, surface a "project changed elsewhere — refresh" UX. Reference: optimistic concurrency.
 
-## BLOCKER 2 — Generic 500 with no Sentry capture and no error ID (Standard 4, Architectural Alignment)
+## BLOCKER 2 — Generic 500 with no Sentry capture and no error ID (Failure Semantics & Observability)
 
 **File:** `app/api/projects/[id]/attach-items/route.ts`
 **Locator:** the outer `catch (err)` that does `console.error("attach-items failed:", err)` followed by `NextResponse.json({ error: "Failed to attach items" }, { status: 500 })`.

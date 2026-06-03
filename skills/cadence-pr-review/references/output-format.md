@@ -9,7 +9,7 @@ The skill always produces a single markdown report. The structure below is non-n
 
 **Diff summary:** N files changed (+X / -Y)
 **Touched areas:** [billing | catalog | projects | upload | chat | aws-data-path | sentry | tests | docs | infra]
-**Commits:** N commits ahead of origin/main
+**Commits:** N commits ahead of origin/$BASE
 
 ## Blockers (must fix before merge)
 
@@ -42,9 +42,11 @@ The skill always produces a single markdown report. The structure below is non-n
 
 | Severity | When |
 |---|---|
-| **BLOCKER** | Hard rule violation from any standard. Cannot merge. |
+| **BLOCKER** | Hard rule violation from any standard or the always-on Failure-Semantics check. Cannot merge. |
 | **FLAG** | Pattern divergence with credible business reason. Reviewer may approve. |
 | **NOTE** | Stylistic, scope-creep, or minor doc gap. Informational only. |
+
+**Ordering rule:** within the Blockers list, order by **blast radius** (most-likely-to-ship-and-hurt first), not by standard number. The human reads top-down and fixes in that order. Every BLOCKER and FLAG MUST cite an exact `file:line` and a falsifiable reason — a finding you can't anchor to a line is a NOTE, not a BLOCKER.
 
 ## Touched-area taxonomy
 

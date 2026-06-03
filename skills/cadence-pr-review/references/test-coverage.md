@@ -2,19 +2,21 @@
 
 > "Do the tests prove behavior or just prove intent?"
 
+_Commands use `origin/$BASE` — the PR's base branch, resolved in the SKILL's Step -1 (defaults to `main` only if unresolved). Never hardcode the base._
+
 ## Hard rules
 
 ### No mocks for data
 - Integration/system tests must hit real APIs (localhost:3000 or production), real S3, real DynamoDB, real upstream services.
 - Real-data fixtures from your test-asset directory.
 - Use your codebase's canonical test user.
-- Search for violations: `git diff origin/main...HEAD | grep -E 'jest\.mock|vi\.mock' -A 3` — review each one. Mocking the AWS SDK in a system test is a violation.
+- Search for violations: `git diff origin/$BASE...HEAD | grep -E 'jest\.mock|vi\.mock' -A 3` — review each one. Mocking the AWS SDK in a system test is a violation.
 
 ### Test files must be enrolled
 - Any new test file must be in your test-suite-map OR a feature-map bundle, otherwise the quality-pipeline won't run it.
 - Check enrollment:
   ```bash
-  for f in $(git diff origin/main...HEAD --name-only | grep -E '\.(test|spec)\.(ts|tsx|js|mjs)$'); do
+  for f in $(git diff origin/$BASE...HEAD --name-only | grep -E '\.(test|spec)\.(ts|tsx|js|mjs)$'); do
     if grep -q "$f" <test-suite-map-file> <feature-map-file>; then
       echo "ENROLLED: $f"
     else
