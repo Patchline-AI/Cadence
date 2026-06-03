@@ -2,7 +2,7 @@
 
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Plugin-D97757)](https://docs.claude.com/en/docs/claude-code/plugins)
 [![License: MIT](https://img.shields.io/badge/License-MIT-0068FF)](./LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.0--alpha.1-00E6E2)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.0--alpha.2-00E6E2)](./CHANGELOG.md)
 
 **Quality at agentic velocity. Research, Gates, Sweeps.**
 

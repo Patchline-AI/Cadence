@@ -7,18 +7,18 @@ _Commands use `origin/$BASE` — the PR's base branch, resolved in the SKILL's S
 ## Quick command
 
 ```bash
-git fetch origin main
+git fetch origin "$BASE"
 git log --oneline HEAD..origin/$BASE -- $(git diff origin/$BASE...HEAD --name-only)
 ```
 
-If output: the branch is patching files that moved on main. **BLOCKER.**
+If output: the branch is patching files that moved on the base. **BLOCKER.**
 
 ## Drift hotspots
 
 These areas drift fastest. Always look closer:
 
 ### Test-suite enrollment files
-- The single source of truth for the quality pipeline. New test files added on main can collide with branch additions.
+- The single source of truth for the quality pipeline. New test files added on the base can collide with branch additions.
 - Check: `git log --oneline HEAD..origin/$BASE -- <test-suite-map-file>`
 
 ### Service-module singletons
