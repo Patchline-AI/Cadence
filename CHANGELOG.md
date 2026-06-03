@@ -4,6 +4,11 @@ All notable changes to Cadence will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.0-alpha.2] — 2026-06-03
+
+### Fixed — `cadence-pr-review`
+- **Completed the base-branch fix.** `references/codebase-drift.md`'s Quick command still ran `git fetch origin main` while the line directly below diffed against `origin/$BASE` — the exact wrong-base-silent class 0.2.0-alpha.1 set out to eliminate, and the reference docs are meant to run standalone. Now fetches `origin/$BASE`; two prose "main" references converted to "the base". Caught by dogfooding `cadence-pr-review` on the 0.2.0-alpha.1 PR (#4).
+
 ## [0.2.0-alpha.1] — 2026-06-02
 
 Comprehensive hardening pass. **Additive only — no skill content removed.**
