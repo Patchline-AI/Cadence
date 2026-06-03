@@ -12,7 +12,7 @@ The 5 Agent Review Standards are the deterministic, checklist-style review (drif
 - Touches public-facing rate-limited endpoints
 - Modifies legacy `} catch { /* swallow */ }` patterns or `.catch(() => null)` patterns in services
 
-For these PRs, **always run the three lenses inline after the 5 standards complete**. The lenses are three additional review passes by the same skill — no external subagents — and each looks at the same diff through a different angle.
+**Always run the three lenses inline after the 5 standards complete — on every PR, not only the cases above.** The cases above are where the lenses are most load-bearing, not a gate that decides whether they run. The lenses are three additional review passes by the same skill — no external subagents — and each looks at the same diff through a different angle. If a lens finds no relevant surface in the diff, it reports `N/A` in one line; it is never skipped.
 
 ## The three lenses
 
@@ -22,9 +22,9 @@ For these PRs, **always run the three lenses inline after the 5 standards comple
 | Lens 2 — Security | Trust-boundary issues the standards' security checklist doesn't enumerate: JWT `aud`/`client_id` validation, `email_verified` enforcement, session-cookie binding (IP/UA/sub), single-secret blast radius, identity-hash bypass via UA rotation, body-buffer DoS *before* rate-limit, lock-takeover clock-skew windows, info disclosure via response field whitelisting, TOCTOU windows on read-modify-write |
 | Lens 3 — Test coverage semantics | Coverage gaps the suite-map enrollment check doesn't see: layered-but-not-composed integration tests (each layer mocked individually, never composed end-to-end), public endpoint with magic-byte sniff added but tested only in vacuous integration runner, missing regression tests for the failure modes the PR claims to fix, expired-cookie / mismatched-userId branches uncovered |
 
-## When to dispatch (decision rule)
+## Where the lenses bite hardest (escalation, not a gate)
 
-Run the three lenses if **any** of these conditions hold:
+You run the three lenses on every PR. The conditions below mark where their findings are most load-bearing — apply maximum scrutiny and treat near-misses as BLOCKERs when **any** hold. They do NOT decide whether the lenses run.
 
 1. **Scope-grew check fires.** Compare current branch tip against the commit you originally reviewed:
 
@@ -33,7 +33,7 @@ Run the three lenses if **any** of these conditions hold:
    git diff --stat ORIG_TIP origin/<branch>
    ```
 
-   If the delta has 5+ changed files OR 500+ added lines OR commits from a different feature scope (e.g. PR #N merged in), the lenses are mandatory.
+   If the delta has 5+ changed files OR 500+ added lines OR commits from a different feature scope (e.g. PR #N merged in), treat the lenses as load-bearing — scrutinize the new surface hardest.
 
 2. **PR description mentions "absorbed", "incorporated", "merged in", "supersedes" another PR.**
 
@@ -50,7 +50,7 @@ Run the three lenses if **any** of these conditions hold:
    git diff origin/$BASE...HEAD | grep -E '\.catch\(\(\) => null\)|\} catch \{ /\* (swallow|ignore)|catch \(.*HTTPError\)|except HTTPError'
    ```
 
-If any of the above match, run the three lenses. Otherwise the 5 standards are sufficient.
+If none of the above match, you still run all three lenses — they simply report less (or `N/A`). The 5 standards are never "sufficient" on their own; the lenses always run alongside them.
 
 ## How to run the lenses inline
 
@@ -100,7 +100,7 @@ The 5 standards on their own returned **"0 BLOCKERS, 1 FLAG"** for this PR. With
 
 ## Extended lenses (Lenses 4–7)
 
-The trio above is the core for high-surface PRs. These four extra lenses cover production-risk classes the trio doesn't. Each fires on a **diff-content trigger** rather than on the high-surface classification — run a lens when its trigger matches, regardless of whether the trio ran. They are cheap (one focused pass each) and catch outage classes that pattern checks and the trio both miss.
+These four extra lenses cover production-risk classes the trio doesn't. **Run all four on every PR**, right after the trio. The **trigger** noted for each lens tells you where it bites — it does NOT gate whether you run it. If a lens's trigger isn't present in the diff, you run the lens, confirm there's nothing to find, and record `N/A — no <trigger> present` (one line). They are cheap (one focused pass each) and catch outage classes that pattern checks and the trio both miss.
 
 ### Lens 4 — Data migration & backward compatibility
 
@@ -157,4 +157,4 @@ Severity: irreversible + no flag on a risky path = BLOCKER; missing flag where s
 
 ## Operating rule
 
-**For a high-surface PR, the 5 standards are the gate. The three inline lenses are the gate-completion step. The extended lenses (4–7) fire on their diff triggers. Don't ship without the set that applies.**
+**On every PR: the 5 standards, then the always-on Failure-Semantics check, then the three trio lenses, then the four extended lenses — all of them, every time. The trigger lists only tell you where to look hardest. Don't ship a review that ran a subset.**

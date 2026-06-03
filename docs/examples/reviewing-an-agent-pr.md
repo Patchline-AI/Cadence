@@ -78,6 +78,6 @@ The 5-standards pass alone returned **0 BLOCKERS**. The three lenses caught **4 
 
 ## The lesson
 
-The 5 standards check **patterns**. The three lenses check **semantics**. For high-surface PRs (auth / Lambda / concurrent-write / scope-grew), running the standards alone ships things. Cadence's `cadence-pr-review` skill encodes this: Step 6 runs three additional review lenses inline, mandatory when the trigger conditions fire.
+The 5 standards check **patterns**. The lenses check **semantics**. Running the standards alone ships things — so the lenses run on **every** PR, never gated off. This example is a high-surface case (auth / Lambda / concurrent-write / scope-grew), where the lenses are most load-bearing; `cadence-pr-review` Step 6 runs them inline on every review.
 
 This is the receipts. Cadence is the practice.

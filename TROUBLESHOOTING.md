@@ -79,18 +79,18 @@ Should list 3 files (`cadence-pr-review`, `cadence-research`, `cadence-sweep`). 
 
 ## Runtime issues
 
-### "5 standards run but the three review lenses don't"
+### "The 5 standards ran but the lenses didn't"
 
-The lenses fire only on high-surface PR detection. Trigger conditions are listed in `skills/cadence-pr-review/references/specialist-trio.md` § "When to dispatch." If your PR doesn't match any trigger, the standards alone are sufficient.
+That's a bug in the run — **the lenses always run on every PR.** The trio (silent failures / security / test semantics) and the extended lenses (migration / idempotency / dependency / rollout) run after the 5 standards on every review; on a diff with no relevant surface they report `N/A` in one line rather than being skipped. The trigger lists in `specialist-trio.md` only mark where the lenses bite hardest, not whether they run.
 
-To force the lenses on a PR you think should match: explicitly invoke `Use cadence-pr-review and run the three inline review lenses`.
+If a run skipped them, force a complete pass: `Use cadence-pr-review and run the full trio and all extended lenses — no skipping.` Also confirm you're on a frontier model with full reasoning/thinking enabled.
 
 ### "Eval fixture findings aren't all flagged"
 
 The plugin ships **five** eval fixtures, each with its own answer key (see `evals/RUN-EVAL.md`):
 `sample-pr/` (5 standards + failure-semantics), `lambda-pr/` and `auth-pr/` and `rate-limit-pr/` (the trio lenses), and `clean-pr/` (must produce `VERDICT: PASS` — false-positive calibration). If your install misses findings or invents them on `clean-pr/`:
 
-1. Check the model in use — Cadence is calibrated against frontier models (Claude Opus 4.6 or newer recommended). Older or smaller models may miss findings; the trio fixtures (`lambda-pr`/`auth-pr`/`rate-limit-pr`) degrade first.
+1. Run review on a frontier model (Claude Opus 4.6 or newer) with maximum reasoning/thinking enabled — review is not where to economize. The trio fixtures (`lambda-pr`/`auth-pr`/`rate-limit-pr`) are the most demanding; if they miss findings, raise the model/thinking budget first.
 2. Check the prompt — `Use cadence-pr-review on <branch-or-fixture>` should be sufficient.
 3. Open an issue with the report you got and the model used.
 

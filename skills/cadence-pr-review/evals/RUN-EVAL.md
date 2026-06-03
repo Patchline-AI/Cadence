@@ -26,4 +26,4 @@ Example invocation (from inside the repo):
 
 For `/plugin install` users, resolve the install path with `/plugin info cadence` first and prefix it to the paths above.
 
-Calibrated against Claude Opus 4.6+. On weaker models the trio fixtures are the first to degrade — if `lambda-pr`/`auth-pr`/`rate-limit-pr` miss findings but `sample-pr` passes, suspect the harness/model before the skill.
+Always run review on a frontier model (Claude Opus 4.6+) with maximum reasoning/thinking enabled — review is not where to economize on model or budget. The trio fixtures (`lambda-pr`/`auth-pr`/`rate-limit-pr`) are the most demanding; if they miss findings while `sample-pr` passes, you're under-powered — raise the model/thinking before suspecting the skill.

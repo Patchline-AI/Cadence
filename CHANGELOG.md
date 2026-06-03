@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Comprehensive hardening pass. **Additive only — no skill content removed.**
 
 ### Added — `cadence-pr-review`
+- **Every review pass runs on every PR.** The trio and extended lenses are not gated to high-surface PRs — the trigger lists only mark where to look hardest, never whether to run. A pass with no relevant surface reports `N/A` in one line; it is never skipped. Run review on a frontier model with full reasoning/thinking — review does not economize on coverage.
 - **Always-on Failure-Semantics & Observability check** (`references/failure-semantics.md`) — gives contextless-500s, swallowed exceptions, and partial-success-200 an explicit home instead of mis-filing them under Architectural Alignment. Runs on every PR (lightweight Lens 1).
 - **Extended lenses 4–7** in `references/specialist-trio.md`: data-migration/backward-compat, idempotency/retry-safety, dependency/supply-chain, rollout/reversibility. Each fires on a diff-content trigger.
 - **New eval fixtures** for the trio (the previously untested high-value capability): `lambda-pr/` (Python `URLError` bypass + secret-fallback predicate), `auth-pr/` (JWT `aud`/`email_verified`/`token_use`/single-secret), `rate-limit-pr/` (body-DoS + UA bypass + fail-closed + untested magic-byte), and `clean-pr/` (false-positive calibration → must produce `VERDICT: PASS`). `RUN-EVAL.md` now drives all five.

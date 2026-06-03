@@ -1,11 +1,11 @@
 ---
 name: cadence-pr-review
-description: Run the five Agent Review Standards against the current branch diff before opening a PR — Codebase Drift Detection, Conflicting PR Detection, Security Review, Architectural Alignment, Test Coverage Assessment — applied with concrete pattern checklists (concurrent-write rows, secret handling at boundaries, multi-agent config drift, real-data integration tests, test-suite enrollment). For HIGH-SURFACE PRs (auth/Lambda/concurrent-write/public-endpoint, OR PR has absorbed another PR), additionally run three inline review lenses against the same diff — silent failures, security semantics, test-coverage semantics — per `references/specialist-trio.md`. When another agent (Codex, etc.) pastes a "completion summary" or "PR opened" message, run the trust-but-verify drill in `references/scope-change-detection.md` BEFORE re-reviewing — scope often grew silently. Use BEFORE opening any PR, BEFORE merging, when reviewing another agent's PR completion summary, or whenever the user types `/cadence-pr-review`, "review my branch", "is this PR safe", "run the review standards", "another agent finished, here's the summary", or hands you a diff and asks "what's wrong with this." Trigger automatically when the assistant has just finished an edit-heavy turn that touched route handlers, service modules, lambda/serverless code, agent-orchestration config, auth middleware, secret-handling modules, auth modules, JWT/token-verification code, crypto-bound subsystems, or any rate-limit module.
+description: Run the five Agent Review Standards against the current branch diff before opening a PR — Codebase Drift Detection, Conflicting PR Detection, Security Review, Architectural Alignment, Test Coverage Assessment — applied with concrete pattern checklists (concurrent-write rows, secret handling at boundaries, multi-agent config drift, real-data integration tests, test-suite enrollment). On every PR, additionally run the inline review lenses against the same diff — silent failures, security semantics, test-coverage semantics, plus the extended lenses (migration, idempotency, dependency, rollout) — per `references/specialist-trio.md`; apply maximum scrutiny on HIGH-SURFACE PRs (auth/Lambda/concurrent-write/public-endpoint, OR a PR that has absorbed another PR). When another agent (Codex, etc.) pastes a "completion summary" or "PR opened" message, run the trust-but-verify drill in `references/scope-change-detection.md` BEFORE re-reviewing — scope often grew silently. Use BEFORE opening any PR, BEFORE merging, when reviewing another agent's PR completion summary, or whenever the user types `/cadence-pr-review`, "review my branch", "is this PR safe", "run the review standards", "another agent finished, here's the summary", or hands you a diff and asks "what's wrong with this." Trigger automatically when the assistant has just finished an edit-heavy turn that touched route handlers, service modules, lambda/serverless code, agent-orchestration config, auth middleware, secret-handling modules, auth modules, JWT/token-verification code, crypto-bound subsystems, or any rate-limit module.
 ---
 
 # Cadence PR Review
 
-You are running pre-PR review against the current branch's diff. Your job is to surface blockers, flag risks, and recommend gates BEFORE the human reviewer sees the PR. Five standards in fixed order.
+You are running pre-PR review against the current branch's diff. Your job is to surface blockers, flag risks, and recommend gates BEFORE the human reviewer sees the PR. Run the COMPLETE review on every PR — all five standards, the always-on failure-semantics check, the full trio, and every extended lens — at maximum rigor, on a frontier model with full reasoning/thinking. Review is no place to economize: never skip a pass, never shorten coverage to save time.
 
 **Announce at start:** "I'm using the cadence-pr-review skill."
 
@@ -43,9 +43,11 @@ At agentic velocity, diffs are often huge. Before deep-reviewing:
 git diff origin/$BASE...HEAD --stat | sort -t'|' -k2 -rn   # biggest churn first
 ```
 
-1. **Rank files by risk, not by size.** Review in this order: auth / token-verification → serverless/Lambda → concurrent-write paths → public unauthenticated endpoints → payment/secret handling → everything else.
-2. **Skip generated/vendored artifacts for deep review** (lockfiles, `*.snap`, generated clients, `dist/`, minified bundles). Note their presence; don't line-review them. Still scope-check them in Standard 1 (a generated file moving on the base is real drift).
-3. **If the diff exceeds your working budget**, review the high-risk files in full and explicitly mark the remainder `NOTE: not deep-reviewed — <reason>` in the report. Never silently skip; an unreviewed file is a stated gap, not an omission.
+Triage sets the **order** you review in. It NEVER reduces coverage — every file gets a full review.
+
+1. **Rank files by risk, not by size.** Review in this order: auth / token-verification → serverless/Lambda → concurrent-write paths → public unauthenticated endpoints → payment/secret handling → everything else. Then keep going until every file is reviewed.
+2. **Generated/vendored artifacts** (lockfiles, `*.snap`, generated clients, `dist/`, minified bundles) get no line-by-line read — there is no human-authored logic to review — but they are NOT skipped: scope-check them in Standard 1 (a generated file moving on the base is real drift) and run Lens 6 on any dependency manifest.
+3. **A large diff means a LONGER review, not a shorter one.** Never stop at a budget and mark the rest "not reviewed." If the diff is too large for one pass, split it into multiple review passes and review every file fully across them. Coverage is non-negotiable.
 
 ## Inputs
 
@@ -78,21 +80,13 @@ If you're being asked to review a PR after another agent (Codex, etc.) finished 
 
 **Reference case** (May 2026 field test): an agent's summary said "addressed the only architecture flag." Reality: 7 new commits, +2,500 lines, an unrelated feature PR merged in (admin-auth surface entered scope). Skipping the scope-change check would have rubber-stamped 4 hidden BLOCKERS.
 
-## What runs, and in what order (core vs. conditional)
+## Run EVERY pass — at maximum rigor, no skipping
 
-Cadence has grown coverage; keep it crisp by knowing what's always-on vs. trigger-gated. **Depth on what's triggered beats breadth on everything** — do not run all passes shallowly on a trivial diff.
+Review is not where you economize. **Run every pass on every PR:** all 5 standards, the always-on Failure-Semantics check, the full trio (Lenses 1–3), and all extended lenses (4–7). There is no "core vs. optional." There is no "skip it because the diff looks small." Run this skill on a frontier model with maximum reasoning/thinking enabled — review is no place to trade depth for speed.
 
-**Core — every PR, always:**
+The trigger lists later in this skill (high-surface conditions, diff patterns) tell you **where a pass bites hardest — never whether to run it.** If a pass's trigger isn't present in the diff, you STILL run the pass and record one line — `N/A — no <trigger> in this diff` — so the review is provably complete. A pass that finds nothing is a pass that *ran*. A pass that was skipped is a hole an incident falls through.
 
-1. Step -1 (resolve base) · Step 0.5 (triage large diffs)
-2. The 5 standards (drift, conflict, security, architecture, tests)
-3. The always-on Failure-Semantics & Observability check
-
-**Conditional — fire only on their trigger:**
-
-- **Step 0 scope-change drill** — only when reviewing another agent's completion summary.
-- **Step 6 trio** (silent failures / security / test semantics) — only for high-surface PRs (auth, Lambda, concurrent-write, public unauthenticated endpoint, or scope-grew).
-- **Extended lenses 4–7** (migration / idempotency / dependency / rollout) — each only when its diff-content trigger matches.
+The only thing that varies by diff is the **order** you review files in (highest-risk first, per Step 0.5) and how much each pass finds. Coverage never varies: it is always 100%.
 
 ## The five standards — run all five, in order
 
@@ -172,13 +166,13 @@ Soft rules (FLAG):
 - Fail-closed controls (rate limit, auth) should be **distinguishable in the response** from fail-by-design, so an outage doesn't look like normal throttling.
 - New `console.log`/`print` on hot paths without a structured logger — FLAG.
 
-## Step 6 — Specialist Trio (high-surface PRs)
+## Step 6 — Specialist Trio (run on EVERY PR)
 
-The 5 standards check **patterns**. They miss **semantics**. For high-surface PRs, run three additional review passes against the same diff, each with a different lens. These run as inline reviews in the same skill — no external subagents required.
+The 5 standards check **patterns**. They miss **semantics**. So you ALWAYS run three additional review passes against the same diff, each with a different lens. These run as inline reviews in the same skill — no external subagents required. Run them on every PR; if the diff has no relevant surface, each lens reports `N/A — no <surface> in this diff` (one line) — it is never skipped.
 
-### When the trio is MANDATORY (not optional)
+### Where the trio bites hardest (review here with extra scrutiny)
 
-Dispatch all three lenses if **any** of:
+The trio always runs. These conditions mark where its findings are most load-bearing — apply maximum scrutiny when **any** hold:
 
 1. Scope-grew check fired in Step 0 (PR has absorbed another PR / +500 lines since prior baseline / +5 commits across feature boundaries).
 2. Touched files match any of:
@@ -204,9 +198,9 @@ Audit trust boundaries: JWT `aud` / `client_id` validation, `email_verified` enf
 **Lens 3 — Test coverage semantics.**
 Audit test-vs-implementation composition: each layer mocked individually but never composed end-to-end, public-endpoint pre-auth gates added but only tested via integration runners that fail at an earlier gate and never reach the new one, regression tests missing for the failure modes the PR claims to fix, mismatched-field branches uncovered (e.g. `body.userId !== resource.userId` returning 409 but the path has no test), expired-credential branches uncovered. Report findings against the diff.
 
-### Extended lenses (run when the diff matches their trigger)
+### Extended lenses 4–7 (run all four on EVERY PR)
 
-The trio (silent failures / security / test semantics) is the core. Four more lenses catch production-risk classes the trio doesn't. Run a lens when its trigger fires — they're cheap. Full checklists in `references/specialist-trio.md` ("Extended lenses").
+Four more lenses catch production-risk classes the trio doesn't. Run all four on every PR. The trigger noted for each tells you where it bites — it does NOT gate whether you run it. If a lens's trigger isn't in the diff, record `N/A — no <trigger> present` (one line) and move on; never skip silently. Full checklists in `references/specialist-trio.md` ("Extended lenses").
 
 **Lens 4 — Data migration & backward compatibility.** Trigger: diff touches a schema, migration, enum, serialized contract, or any public API response shape. Hunt for: non-nullable column/field added without a default or backfill, enum value removed/renamed, response field removed or retyped (breaks existing clients), migration that isn't reversible, read/write deploy-ordering hazards (new code reads a column the migration hasn't added yet).
 
